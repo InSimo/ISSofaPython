@@ -1,0 +1,6 @@
+# Git conflict
+*.orig
+# Python compiled files
+*.pyc
+
+
