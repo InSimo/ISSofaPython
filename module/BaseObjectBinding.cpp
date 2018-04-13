@@ -34,8 +34,8 @@ void initBindingBaseObject(pybind11::module& m)
         .def("reinit", &BaseObject::reinit)
         .def("handleEvent", &BaseObject::handleEvent)
         .def("cleanup",&BaseObject::cleanup)
-        .def("getMutableContext", pybind11::overload_cast<void>( &BaseObject::getContext), pybind11::return_value_policy::reference)
-        .def("getContext", pybind11::overload_cast<void>(&BaseObject::getContext, pybind11::const_), pybind11::return_value_policy::reference)
+        .def("getMutableContext", pybind11::overload_cast<>( &BaseObject::getContext), pybind11::return_value_policy::reference)
+        .def("getContext", pybind11::overload_cast<>(&BaseObject::getContext, pybind11::const_), pybind11::return_value_policy::reference)
         .def("getPath", &getPath)
         ;
 }

@@ -52,7 +52,7 @@ set( MODULE_SOURCE_FILES
 )
 
 add_library(ISSofaPython SHARED ${MODULE_SOURCE_FILES} ${MODULE_HEADER_FILES} )
-target_link_libraries(ISSofaPython PRIVATE pybind11::module SofaSimulationTree)
+target_link_libraries(ISSofaPython PRIVATE pybind11::module SofaSimulationTree ${PYTHON_LIBRARIES})
 set_target_properties(ISSofaPython PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                              SUFFIX "${PYTHON_MODULE_EXTENSION}")
 set(ISSOFAPYTHON_COMPILER_FLAGS "-DSOFA_BUILD_ISSOFAPYTHON")

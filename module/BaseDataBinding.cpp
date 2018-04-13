@@ -32,26 +32,7 @@ using sofa::defaulttype::AbstractValueTypeInfo;
 
 
 template< typename PyArithmeticType >
-struct PyArithmeticTypeCaster
-{
-    static long long castToInteger(const PyArithmeticType& type)
-    {
-        std::static_assert(false, "Invalid");
-        return 0;
-    }
-
-    static unsigned long long castToUnsigned(const PyArithmeticType& type)
-    {
-        std::static_assert(false, "Invalid");
-        return 0;
-    }
-
-    static SReal castToScalar(const PyArithmeticType& type)
-    {
-        std::static_assert(false, "Invalid");
-        return 0;
-    }
-};
+struct PyArithmeticTypeCaster;
 
 
 template <>
@@ -104,13 +85,13 @@ struct PyArithmeticTypeCaster<pybind11::float_>
     static long long castToInteger(const pybind11::float_& pyFloat)
     {
         double value(pyFloat);
-        return long long(value);
+        return (long long)(value);
     }
 
     static unsigned long long castToUnsigned(const pybind11::float_& pyFloat)
     {
         double value(pyFloat);
-        return unsigned long long(value);
+        return (unsigned long long)(value);
     }
 
     static SReal castToScalar(const pybind11::float_& pyFloat)
@@ -307,7 +288,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
         }
         else if (singleTypeInfo->Unsigned())
         {
-            pybind11::int_ pyInt(unsigned long long(singleTypeInfo->getFinalValueInteger(dataPtr, 0)));
+            pybind11::int_ pyInt((unsigned long long)(singleTypeInfo->getFinalValueInteger(dataPtr, 0)));
             return pyInt;
         }
         else if (singleTypeInfo->Scalar())
