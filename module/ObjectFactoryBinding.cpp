@@ -69,6 +69,11 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
     BaseObjectDescription desc = createBaseObjectDescription(args, kwargs);
     sofa::sptr<BaseObject > obj = factory->createObject(ctx, &desc);
 
+    if (obj == nullptr)
+    {
+        throw std::invalid_argument("createObject failed with: " + desc.getName());
+    }
+
     // store the source location of this object
     //PyFrameObject* frame = PyEval_GetFrame();
     PyThreadState *tstate = PyThreadState_GET();

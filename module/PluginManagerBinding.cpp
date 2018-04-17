@@ -16,9 +16,9 @@ namespace python
 using sofa::helper::system::Plugin;
 using sofa::helper::system::PluginManager;
 
-bool findPlugin(PluginManager* pluginManager, std::string& path, const std::string& suffix = PluginManager::getDefaultSuffix())
+void findPlugin(PluginManager* pluginManager, std::string& path, const std::string& suffix = PluginManager::getDefaultSuffix())
 {
-    return pluginManager->findPlugin(path, suffix);
+    bool found = pluginManager->findPlugin(path, suffix);
 }
 
 bool hasPlugin(PluginManager* pluginManager, std::string& path, bool finalPath = false)
@@ -26,14 +26,24 @@ bool hasPlugin(PluginManager* pluginManager, std::string& path, bool finalPath =
     return pluginManager->hasPlugin(path, finalPath);
 }
 
-bool loadPlugin(PluginManager* pluginManager, std::string& path, bool finalPath = false)
+bool loadPlugin(PluginManager* pluginManager, const std::string& path, bool finalPath = false)
 {
-    return pluginManager->loadPlugin(path, &std::cerr, false);
+    std::string pathCopy = path;
+    const bool loaded = pluginManager->loadPlugin(pathCopy, &std::cerr, false);
+    if (!loaded)
+    {
+        throw std::invalid_argument("loadPlugin failed with " + path);
+    }
 }
 
-bool pluginManagerLoadPlugin(std::string& path, bool finalPath = false)
+bool pluginManagerLoadPlugin(const std::string& path, bool finalPath = false)
 {
-    return loadPlugin(&PluginManager::getInstance(), path, finalPath);
+    std::string pathCopy = path;
+    const bool loaded = loadPlugin(&PluginManager::getInstance(), path, finalPath);
+    if (!loaded)
+    {
+        throw std::invalid_argument("loadPlugin failed with " + path);
+    }
 }
 
 void initBindingPluginManager(pybind11::module& m)
