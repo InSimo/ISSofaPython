@@ -262,12 +262,24 @@ void setDataValueFromPyContainer(BaseData* data, PyContainerType pyContainer)
 void setDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
 {
     const AbstractTypeInfo* dataTypeInfo = data->getValueTypeInfo();
-    void * dataPtr = data->beginEditVoidPtr();
-    const bool ok = setValuePtrFromPyObjectDispatch(dataPtr, dataTypeInfo, pyObj);
-    data->endEditVoidPtr();
-    if (!ok)
+    
+    if (pybind11::isinstance<pybind11::str>(pyObj))
     {
-        throw std::invalid_argument("Unsupported argument");
+        auto s = pybind11::reinterpret_borrow<pybind11::str>(pyObj);
+        std::string str(s);
+        void * dataPtr = data->beginEditVoidPtr();
+        dataTypeInfo->setDataValueString(dataPtr, str);
+        data->endEditVoidPtr();
+    }
+    else
+    {
+        void * dataPtr = data->beginEditVoidPtr();
+        const bool ok = setValuePtrFromPyObjectDispatch(dataPtr, dataTypeInfo, pyObj);
+        data->endEditVoidPtr();
+        if (!ok)
+        {
+            throw std::invalid_argument("Unsupported argument");
+        }
     }
 }
 
