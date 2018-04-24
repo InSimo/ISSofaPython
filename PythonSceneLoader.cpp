@@ -7,6 +7,7 @@
 #include "PythonSceneLoader.h"
 #include <sofa/helper/system/SetDirectory.h>
 #include <sofa/simulation/tree/GNode.h>
+#include <sofa/simulation/tree/TreeSimulation.h>
 
 namespace sofa
 {
@@ -71,7 +72,9 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char* filename)
     std::string fileDir = SetDirectory::GetParentDir(filename);
     std::string file    = SetDirectory::GetFileNameWithoutExtension(filename);
 
-    GNode::SPtr gNode = New<GNode>("root");
+    
+    auto node = sofa::simulation::tree::getSimulation()->createNewGraph("root");
+    GNode::SPtr gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
 
     try
     {
