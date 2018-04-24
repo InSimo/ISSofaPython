@@ -16,7 +16,7 @@ class MyController(Sofa.PythonController):
     def callback(self, e ):
         print self.getClass().className + "::handleEvent("+ e.getClass().fullTypeName + " " + e.getClassName() +")"
 
-root = Sofa.GNode()
+root = Sofa.createRootNode("root")
 controller = MyController()
 controller.setName("MyController")
 root.addObject(controller)

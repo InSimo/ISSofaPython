@@ -10,7 +10,7 @@ class MyObject(Sofa.BaseObject):
 
 
 rootObject = MyObject("rootObject")
-root = Sofa.GNode("root")
+root = Sofa.createRootNode("root")
 root.addObject(rootObject)
 
 childObject = MyObject("childObject")

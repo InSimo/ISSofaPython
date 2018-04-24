@@ -24,7 +24,7 @@ class MyObject(Sofa.BaseObject):
 
 
 rootObject = MyObject("rootObject")
-root = Sofa.GNode("root")
+root = Sofa.createRootNode("root")
 root.addObject(rootObject)
 
 childObject = MyObject("childObject")
@@ -70,7 +70,7 @@ This works:
 import ISSofaPython as Sofa
 
 Sofa.loadPlugin("myPlugin")
-node = Sofa.GNode("root")
+node = Sofa.createRootNode("root")
 obj  = node.createObject("MyObject", name="myObject")
 print obj.name.value # output "myObject"
 ```
@@ -96,7 +96,7 @@ obj.printLog.value = False
 ```
 
 This change is however more natural when dealing with other part of the `Data` API
-For example setting the parent of a `Data` in SofaPython requires accessing the read/write `value` attribute of a `Data`.
+For example setting the parent of a `Data` in SofaPython requires to write:
 ```lang=python
 obj.findData('printLog').setParent(parentData)
 ```
@@ -109,20 +109,23 @@ obj.printLog.setParent(parentData)
 === Setting the value of a Data which wraps a vector/array type 
 
 `ISSofaPython` uses more advanced reflection mechanisms for `Data` types compared to `SofaPython`.
-For example to pass a python object to a Data which internally represents a `vector< Vec3d >`, a similar structure must also exist in the python object.
+For example to assign a python object to a Data which internally represents a `vector< Vec3d >`, a similar structure must also exist in the python object.
 The syntax is currently permissive as shown in the following example:
 ```lang=python
 import ISSofaPython as Sofa
 #...
 
-root = Sofa.GNode("root")
+root = Sofa.createRootNode("root")
 mobj = root.createObject("MechanicalObject", template="Vec3d", mame="MO" )
 # The following gives a very different result compared to SofaPython 
 mobj.position.value = [ 0,1,0 ]
 mobj.position.value  # prints  [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)] 
 
-# This is the correct way to write it with ISSofaPython
+# This is the correct way to assign to a `Data` which stores a `vector<Vec3d>` with ISSofaPython
 mobj.position.value = [ (0,0,0), (1,0,0) ]
+
+# This works as well
+mobj.position.value = [ [0,0,0], [1,0,0] ]
 
 ```
 

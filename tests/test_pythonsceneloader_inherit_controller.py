@@ -26,4 +26,3 @@ def createScene(root):
     # controller does not go out of scope, so the overriden init method is indeed called later
     # when the graph is initialised.
     return root
-

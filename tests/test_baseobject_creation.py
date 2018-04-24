@@ -1,7 +1,7 @@
 import ISSofaPython as Sofa
 
 
-node   = Sofa.GNode("root")
+node   = Sofa.createRootNode("root")
 object = Sofa.BaseObject()
 object.setName("object")
 node.addObject(object)
