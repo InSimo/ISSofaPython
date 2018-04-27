@@ -152,8 +152,7 @@ void initBindingObjectFactory(pybind11::module& m)
                     >(m, "ObjectFactory")
         .def(pybind11::init([](void) { return ObjectFactory::getInstance(); }), pybind11::return_value_policy::reference)
         .def_static("getInstance", &ObjectFactory::getInstance, pybind11::return_value_policy::reference)
-        .def("createObject", &ObjectFactory::createObject, 
-             pybind11::call_guard<pybind11::scoped_ostream_redirect, pybind11::scoped_estream_redirect>())
+        .def("createObject", &ObjectFactory::createObject)
         .def("getClass", &getClass )
         ;
 }

@@ -48,8 +48,7 @@ void initBindingGNode(pybind11::module& m)
     pybind11::class_<GNode, Node,
                      PySofaGNode, 
                      sofa::sptr< GNode > > gNode(m, "GNode");
-    gNode.def("createObject",&internal::createObject, 
-              pybind11::call_guard<pybind11::scoped_ostream_redirect, pybind11::scoped_estream_redirect>())
+    gNode.def("createObject", &internal::createObject)
          .def("addChild", [](GNode* instance, GNode::SPtr child) { instance->addChild(child); } )
          .def("removeChild", [](GNode* instance, GNode::SPtr child) { instance->removeChild(child); } )
          ;
