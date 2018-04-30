@@ -29,6 +29,7 @@ using sofa::defaulttype::AbstractTypeInfo;
 using sofa::defaulttype::AbstractMultiValueTypeInfo;
 using sofa::defaulttype::AbstractContainerTypeInfo;
 using sofa::defaulttype::AbstractValueTypeInfo;
+using sofa::defaulttype::AbstractStructureTypeInfo;
 
 
 template< typename PyArithmeticType >
@@ -208,6 +209,36 @@ bool setValuePtrFromPyContainer(void* dataPtr, const AbstractContainerTypeInfo* 
     return ok;
 }
 
+
+bool setStructValuePtrFromPyDict(void* dataPtr, const AbstractStructureTypeInfo* structTypeInfo, pybind11::dict pyDict)
+{
+    bool ok = (structTypeInfo != nullptr);
+
+    if (structTypeInfo != nullptr)
+    {
+        const std::size_t structSize = structTypeInfo->structSize();
+
+        for (std::size_t i=0; i< structSize; ++i)
+        {
+            std::string dataStructMemberName = structTypeInfo->getMemberName(dataPtr, i);
+
+            if ( pyDict.contains(dataStructMemberName.c_str()) )
+            {
+                const AbstractTypeInfo* typeInfo = structTypeInfo->getMemberTypeForIndex(i);
+                void* dataStructMemberPtr = structTypeInfo->editMemberValue(dataPtr, i);
+                if (!setValuePtrFromPyObjectDispatch(dataStructMemberPtr, typeInfo, pyDict[dataStructMemberName.c_str()]))
+                {
+                    ok = false;
+                    break;
+                }
+            }
+            // TODO: maybe issue a warning here. It probably means we mistyped something.
+        }
+    }
+    return ok;
+
+}
+
 bool setValuePtrFromPyObjectDispatch(void* dataPtr, const AbstractTypeInfo* typeInfo, pybind11::handle src  )
 {
     bool ok = true;
@@ -231,6 +262,11 @@ bool setValuePtrFromPyObjectDispatch(void* dataPtr, const AbstractTypeInfo* type
         auto s = pybind11::reinterpret_borrow<pybind11::str>(src);
         std::string str(s);
         ok = setFinalValueFromString(dataPtr, str, typeInfo->MultiValueType() );
+    }
+    else if (pybind11::isinstance<pybind11::dict>(src))
+    {
+        auto d = pybind11::reinterpret_borrow<pybind11::dict>(src);
+        ok = setStructValuePtrFromPyDict(dataPtr, typeInfo->StructureType(), d);
     }
     else if (pybind11::isinstance<pybind11::list>(src))
     {
@@ -318,6 +354,22 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
             throw std::invalid_argument("unsupported DataTypeInfo");
             return pybind11::object();
         }
+    }
+    else if (typeInfo->IsStructure())
+    {
+        const AbstractStructureTypeInfo* structTypeInfo = typeInfo->StructureType();
+        const std::size_t structSize = structTypeInfo->structSize();
+
+        pybind11::dict pyDict;
+        for (std::size_t i= 0; i<structSize; ++i)
+        {
+            const AbstractTypeInfo* typeInfo = structTypeInfo->getMemberTypeForIndex(i);
+            std::string dataStructMemberName = structTypeInfo->getMemberName(dataPtr, i);
+            const void* dataStructMemberPtr = structTypeInfo->getMemberValue(dataPtr, i);
+            pybind11::object obj = getDataPtrValueAsPyObject(dataStructMemberPtr, typeInfo);
+            pyDict[dataStructMemberName.c_str()] = obj;
+        }
+        return pyDict;
     }
     else if (typeInfo->IsContainer())
     {
