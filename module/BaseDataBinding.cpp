@@ -319,6 +319,96 @@ void setDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
     }
 }
 
+
+void pushBackDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
+{
+    const AbstractTypeInfo* dataTypeInfo = data->getValueTypeInfo();
+    const AbstractContainerTypeInfo* dataContainterTypeInfo = dataTypeInfo->ContainerType();
+
+    if (!dataContainterTypeInfo)
+    {
+        throw std::invalid_argument("Data does not hold a container type");
+    }
+
+    if (dataContainterTypeInfo->FixedContainerSize())
+    {
+        throw std::invalid_argument("Data does not hold a resizable container type");
+    }
+
+    if (dataContainterTypeInfo->ContainerKind() != sofa::defaulttype::ContainerKindEnum::Array)
+    {
+        throw std::invalid_argument("Only implemented for Array container kind.");
+    }
+
+    void* dataPtr = data->beginEditVoidPtr();
+    const std::size_t previousSize = dataContainterTypeInfo->containerSize(dataPtr);
+    dataContainterTypeInfo->setContainerSize(dataPtr, previousSize+1);
+    void* valuePtr = dataContainterTypeInfo->editItemValue(dataPtr, previousSize);
+    const bool ok = setValuePtrFromPyObjectDispatch(valuePtr, dataContainterTypeInfo->getMappedType(), pyObj);
+    if (!ok)
+    {
+        dataContainterTypeInfo->setContainerSize(dataPtr, previousSize);
+    }
+    data->endEditVoidPtr();
+    if (!ok)
+    {
+        throw std::invalid_argument("Unsupported argument");
+    }
+}
+
+void insertDataValueAtIndexFromPyObject(BaseData* data, std::size_t index, pybind11::object pyObj)
+{
+    const AbstractTypeInfo* dataTypeInfo = data->getValueTypeInfo();
+    const AbstractContainerTypeInfo* dataContainterTypeInfo = dataTypeInfo->ContainerType();
+
+    if (!dataContainterTypeInfo)
+    {
+        throw std::invalid_argument("Data does not hold a container type");
+    }
+    if (dataContainterTypeInfo->ContainerKind() != sofa::defaulttype::ContainerKindEnum::Array)
+    {
+        throw std::invalid_argument("Currently only implemented for Array container kind.");
+    }
+    void* dataPtr = data->beginEditVoidPtr();
+    const std::size_t size = dataContainterTypeInfo->containerSize(dataPtr);
+    if (index < size)
+    {
+        void* valuePtr = dataContainterTypeInfo->editItemValue(dataPtr, index);
+        const bool ok = setValuePtrFromPyObjectDispatch(valuePtr, dataContainterTypeInfo->getMappedType(), pyObj);
+        data->endEditVoidPtr();
+        if (!ok)
+        {
+            throw std::invalid_argument("Unsupported argument");
+        }
+    }
+    else
+    {
+        data->endEditVoidPtr();
+        std::string message = "index: " + std::to_string(index) + " size: " + std::to_string(size);
+        throw pybind11::index_error(message.c_str());
+    }
+}
+
+void resizeData(BaseData* data, std::size_t size)
+{
+    const AbstractTypeInfo* dataTypeInfo = data->getValueTypeInfo();
+    const AbstractContainerTypeInfo* dataContainterTypeInfo = dataTypeInfo->ContainerType();
+
+    if (!dataContainterTypeInfo)
+    {
+        throw std::invalid_argument("Data does not hold a container type");
+    }
+
+    if (dataContainterTypeInfo->FixedContainerSize())
+    {
+        throw std::invalid_argument("Data does not hold a resizable container type");
+    }
+
+    void* dataPtr = data->beginEditVoidPtr();
+    dataContainterTypeInfo->setContainerSize(dataPtr, size);
+    data->endEditVoidPtr();
+}
+
 pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTypeInfo* typeInfo)
 {
     if (!typeInfo)
@@ -426,6 +516,30 @@ pybind11::object getDataValueAsPyObject(const BaseData* data)
     return obj;
 }
 
+pybind11::object getDataValueAtIndex(const BaseData* data, std::size_t index)
+{
+    const AbstractTypeInfo* dataTypeInfo = data->getValueTypeInfo();
+    const AbstractContainerTypeInfo* dataContainterTypeInfo = dataTypeInfo->ContainerType();
+    if (!dataContainterTypeInfo)
+    {
+        throw std::invalid_argument("Data does not hold a container type");
+    }
+    const void* dataPtr = data->getValueVoidPtr();
+    const std::size_t size = dataContainterTypeInfo->containerSize(dataPtr);
+    pybind11::object pyObj;
+    if (index < size)
+    {
+        const void* valuePtr = dataContainterTypeInfo->getItemValue(dataPtr, index);
+        pyObj = getDataPtrValueAsPyObject(valuePtr, dataContainterTypeInfo->getMappedType() );
+    }
+    else
+    {
+        std::string message = "index: " + std::to_string(index) + " size: " + std::to_string(size);
+        throw pybind11::index_error(message.c_str());
+    }
+    return pyObj;
+}
+
 std::string getPath(const BaseData* data)
 {
     std::string path;
@@ -460,8 +574,12 @@ void initBindingBaseData(pybind11::module& m)
         .def("getName", &BaseData::getName, pybind11::return_value_policy::copy)
         .def_property("name", &BaseData::getName, &BaseData::setName, pybind11::return_value_policy::copy)
         .def("setValue", &setDataValueFromPyObject)
+        .def("resize", &resizeData)
+        .def("push_back", &pushBackDataValueFromPyObject)
+        .def("insert", &insertDataValueAtIndexFromPyObject)
         .def("getValue", &getDataValueAsPyObject)
-        .def_property("value", &getDataValueAsPyObject, &setDataValueFromPyObject) 
+        .def("at",&getDataValueAtIndex)
+        .def_property("value", &getDataValueAsPyObject, &setDataValueFromPyObject)
         .def("getValueString",&BaseData::getValueString)
         .def("getPath",&getPath)
         .def("getParent",&BaseData::getParent)
