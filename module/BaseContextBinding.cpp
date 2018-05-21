@@ -61,6 +61,8 @@ void initBindingBaseContext(pybind11::module& m)
                .def("removeObject", &BaseContext::removeObject)
                .def("getObject", &getObject)
                .def("getObjects", &getObjects, pybind11::arg("classInfo"), pybind11::arg("dir") = BaseContext::SearchUp )
+               .def("getDt",&BaseContext::getDt )
+               .def("getTime",&BaseContext::getTime )
         ;
 
 
