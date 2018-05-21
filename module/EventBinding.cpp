@@ -6,6 +6,12 @@
 
 #include "EventBinding.h"
 #include <sofa/core/objectmodel/Event.h>
+#include <sofa/simulation/common/AnimateBeginEvent.h>
+#include <sofa/simulation/common/AnimateEndEvent.h>
+#include <sofa/simulation/common/CollisionBeginEvent.h>
+#include <sofa/simulation/common/CollisionEndEvent.h>
+#include <sofa/simulation/common/IntegrateBeginEvent.h>
+#include <sofa/simulation/common/IntegrateEndEvent.h>
 
 namespace sofa
 {
@@ -13,7 +19,12 @@ namespace python
 {
 
 using sofa::core::objectmodel::Event;
-
+using sofa::simulation::AnimateBeginEvent;
+using sofa::simulation::AnimateEndEvent;
+using sofa::simulation::CollisionBeginEvent;
+using sofa::simulation::CollisionEndEvent;
+using sofa::simulation::IntegrateBeginEvent;
+using sofa::simulation::IntegrateEndEvent;
 
 void initBindingEvent(pybind11::module& m)
 {
@@ -21,6 +32,26 @@ void initBindingEvent(pybind11::module& m)
         .def("getClass", &Event::getClass, pybind11::return_value_policy::reference)
         .def("getClassName", &Event::getClassName, pybind11::return_value_policy::copy)
         ;
+
+    pybind11::class_<AnimateBeginEvent, Event, PyEvent<AnimateBeginEvent> >(m, "AnimateBeginEvent")
+        .def(pybind11::init<double>())
+        ;
+    pybind11::class_<AnimateEndEvent, Event, PyEvent<AnimateEndEvent> >(m, "AnimateEndEvent")
+        .def(pybind11::init<double>())
+        ;
+    pybind11::class_<CollisionBeginEvent, Event, PyEvent<CollisionBeginEvent> >(m, "CollisionBeginEvent")
+        .def(pybind11::init<>())
+        ;
+    pybind11::class_<CollisionEndEvent, Event, PyEvent<CollisionEndEvent> >(m, "CollisionEndEvent")
+        .def(pybind11::init<>())
+        ;
+    pybind11::class_<IntegrateBeginEvent, Event, PyEvent<IntegrateBeginEvent> >(m, "IntegrateBeginEvent")
+        .def(pybind11::init<>())
+        ;
+    pybind11::class_<IntegrateEndEvent, Event, PyEvent<IntegrateEndEvent> >(m, "IntegrateEndEvent")
+        .def(pybind11::init<>())
+        ;
+
 
     m.def("GetEventRootClass", []() -> const sofa::core::objectmodel::BaseRootClass<Event>* { return Event::GetClass();  });
 }
