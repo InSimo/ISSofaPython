@@ -26,6 +26,11 @@ class PySofaBaseObject : public PySofaBase<TSofaObject>
 {
 public:
 
+    const sofa::core::objectmodel::BaseClass* getClass() const override
+    {
+        PYBIND11_OVERLOAD(sofa::core::objectmodel::BaseClass*, TSofaObject, getClass, );
+    }
+    
     void init() override 
     {
         PYBIND11_OVERLOAD(void, TSofaObject, init, );
@@ -46,14 +51,14 @@ public:
         PYBIND11_OVERLOAD(void, TSofaObject, handleEvent, e);
     }
 
-    const sofa::core::objectmodel::BaseClass* getClass() const override
-    {
-        PYBIND11_OVERLOAD(sofa::core::objectmodel::BaseClass*, TSofaObject, getClass, );
-    }
-
     void cleanup() override
     {
         PYBIND11_OVERLOAD(void, TSofaObject, cleanup, );
+    }
+
+    void reset() override
+    {
+        PYBIND11_OVERLOAD(void, TSofaObject, reset, );
     }
 
     using PySofaBase<TSofaObject>::PySofaBase; // Inherit constructors
