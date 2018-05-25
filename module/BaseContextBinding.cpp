@@ -36,10 +36,25 @@ std::vector< BaseObject::SPtr > getObjects(BaseContext* ctx, const BaseClass* cl
 pybind11::object getObject(BaseContext* ctx, std::string path)
 {
     BaseObject::SPtr obj;
+    const char atStr = '@';
+    const bool found = path.empty() ? false : path[0] == atStr;
+    if (found)
+    {
+        ctx->get<BaseObject>(obj, path.substr(1));
+    }
+    else
+    {
+        ctx->get<BaseObject>(obj, path);
+    }
 
-    ctx->get<BaseObject>(obj, path);
-
-    return bindDataAndLinks(obj);
+    if (obj)
+    {
+        return bindDataAndLinks(obj);
+    }
+    else
+    {
+        return pybind11::none();
+    }
 }
 
 void initBindingBaseContext(pybind11::module& m)
