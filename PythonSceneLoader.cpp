@@ -72,7 +72,8 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char* filename)
     std::string fileDir = SetDirectory::GetParentDir(filename);
     std::string file    = SetDirectory::GetFileNameWithoutExtension(filename);
 
-    
+    sofa::helper::system::DataRepository.addFirstPath(fileDir);
+        
     auto node = sofa::simulation::tree::getSimulation()->createNewGraph("root");
     GNode::SPtr gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
 
