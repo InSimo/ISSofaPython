@@ -39,10 +39,10 @@ public:
 
     }
 
-    sofa::sptr< sofa::simulation::Node > createChild(const std::string& name) override
-    {
-        PYBIND11_OVERLOAD(sofa::sptr< sofa::simulation::Node >, GNode, createChild, name);
-    }
+    //sofa::sptr< sofa::simulation::Node > createChild(const std::string& name) override
+    //{
+    //    PYBIND11_OVERLOAD(sofa::sptr< sofa::simulation::Node >, GNode, createChild, name);
+    //}
 
 
 };

@@ -11,6 +11,7 @@
 #include <sofa/core/objectmodel/BaseClass.h>
 #include <boost/intrusive_ptr.hpp>
 #include <sofa/core/objectmodel/BaseObject.h>
+#include <sofa/simulation/tree/GNode.h>
 
 namespace sofa
 {
@@ -30,8 +31,13 @@ namespace python
 {
 
 void initBindingBase(pybind11::module& m);
+
 pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject> obj);
 
+pybind11::object bindDataAndLinks(sofa::sptr<simulation::tree::GNode> obj);
+
+void genericBindDataAndLinks(pybind11::object& pyObj, const helper::vector<core::objectmodel::BaseData*> dataVec,
+    const helper::vector<BaseLink*> linkVec, const std::string& objName);
 
 template< class TSofaBase >
 class PySofaBase : public TSofaBase

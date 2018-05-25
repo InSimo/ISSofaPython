@@ -28,7 +28,7 @@ void initBindingNode(pybind11::module& m)
                      PySofaNode< Node >,
                      sofa::sptr< Node > > node(m, "Node" ); 
 
-    node.def("createChild", &Node::createChild );
+    //node.def("createChild", &Node::createChild );
 }
 
 }

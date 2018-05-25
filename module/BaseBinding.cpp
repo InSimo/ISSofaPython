@@ -33,12 +33,9 @@ void initBindingBase(pybind11::module& m)
         ;
 }
 
-pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject > obj)
+void genericBindDataAndLinks(pybind11::object& pyObj, const helper::vector<core::objectmodel::BaseData*> dataVec, 
+    const helper::vector<BaseLink*> linkVec, const std::string& objName)
 {
-    pybind11::object pyObj = pybind11::cast(obj);
-
-    const auto dataVec = obj->getDataFields();
-
     for (auto data : dataVec)
     {
         if (!pybind11::hasattr(pyObj, data->getName().c_str()))
@@ -54,14 +51,7 @@ pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject > obj
                 //which is the case when the DataTypeInfo is not supported by the binding
             }
         }
-        else
-        {
-            pybind11::print(obj->getName(), ": Could not set Data attribute ", data->getName(), " since already set.");
-        }
     }
-
-
-    const auto linkVec = obj->getLinks();
 
     for (auto link : linkVec)
     {
@@ -74,15 +64,23 @@ pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject > obj
             }
             catch (pybind11::error_already_set&)
             {
-                pybind11::print(obj->getName(), ": unknown error when setting Link attribute ", link->getName());
+                pybind11::print(objName, ": unknown error when setting Link attribute ", link->getName());
             }
         }
-        else
-        {
-            pybind11::print(obj->getName(), ": Could not set Link attribute ", link->getName(), " since already set.");
-        }
     }
+}
 
+pybind11::object bindDataAndLinks(sofa::sptr<simulation::tree::GNode > obj)
+{
+    pybind11::object pyObj = pybind11::cast(obj);
+    genericBindDataAndLinks(pyObj, obj->getDataFields(), obj->getLinks(), obj->getName());
+    return pyObj;
+}
+
+pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject > obj)
+{
+    pybind11::object pyObj = pybind11::cast(obj);
+    genericBindDataAndLinks(pyObj, obj->getDataFields(), obj->getLinks(), obj->getName());
     return pyObj;
 }
 
