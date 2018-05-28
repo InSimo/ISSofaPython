@@ -10,6 +10,7 @@
 #include <pybind11/pybind11.h>
 #include <sofa/core/objectmodel/BaseClass.h>
 #include <boost/intrusive_ptr.hpp>
+#include <sofa/core/objectmodel/BaseObject.h>
 
 namespace sofa
 {
@@ -29,6 +30,7 @@ namespace python
 {
 
 void initBindingBase(pybind11::module& m);
+pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject> obj);
 
 
 template< class TSofaBase >

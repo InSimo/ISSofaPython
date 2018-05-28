@@ -33,13 +33,13 @@ std::vector< BaseObject::SPtr > getObjects(BaseContext* ctx, const BaseClass* cl
     return objects;
 }
 
-BaseObject::SPtr getObject(BaseContext* ctx, std::string path)
+pybind11::object getObject(BaseContext* ctx, std::string path)
 {
     BaseObject::SPtr obj;
 
     ctx->get<BaseObject>(obj, path);
 
-    return obj;
+    return bindDataAndLinks(obj);
 }
 
 void initBindingBaseContext(pybind11::module& m)
