@@ -10,6 +10,7 @@
 #include <sofa/core/objectmodel/BaseData.h>
 #include <sofa/defaulttype/AbstractTypeInfo.h>
 #include <sofa/core/objectmodel/BaseNode.h>
+#include <sofa/core/dataparser/JsonDataParser.h>
 
 #include <pybind11/stl.h>
 
@@ -563,7 +564,42 @@ std::string getPath(const BaseData* data)
     return path;
 }
 
+pybind11::object getDataJsonAsPyObject(const BaseData* data)
+{
+    // depending on the data type, we return the good python type (int, float, sting, array, ...)
 
+    const AbstractTypeInfo *typeinfo = data->getValueTypeInfo();
+    const void* valueVoidPtr = data->getValueVoidPtr();
+    std::string output;
+    if (typeinfo->ValidInfo())
+    {
+        sofa::core::dataparser::JsonDataParser JsonParser(data->getName());
+        JsonParser.fromData(output, valueVoidPtr, typeinfo);
+    }
+    else
+    {
+        throw std::invalid_argument("Unsupported DataTypeInfo for JSON parsing");
+        output = "{}";
+    }
+    pybind11::str pyStr(output);
+    return pyStr;
+}
+
+void setDataJsonFromPyObject(BaseData* data, const std::string& json)
+{
+    const AbstractTypeInfo *typeinfo = data->getValueTypeInfo();
+    if (typeinfo->ValidInfo())
+    {
+        sofa::core::dataparser::JsonDataParser JsonParser(data->getName());
+        void* editVoidPtr = data->beginEditVoidPtr();
+        JsonParser.toData(json, editVoidPtr, typeinfo);
+        data->endEditVoidPtr();
+    }
+    else
+    {
+        throw std::invalid_argument("Unsupported DataTypeInfo for JSON parsing");
+    }
+}
 
 void initBindingBaseData(pybind11::module& m)
 {
@@ -580,6 +616,7 @@ void initBindingBaseData(pybind11::module& m)
         .def("getValue", &getDataValueAsPyObject)
         .def("at",&getDataValueAtIndex)
         .def_property("value", &getDataValueAsPyObject, &setDataValueFromPyObject)
+        .def_property("json", &getDataJsonAsPyObject, &setDataJsonFromPyObject)
         .def("getValueString",&BaseData::getValueString)
         .def("getPath",&getPath)
         .def("getParent",&BaseData::getParent)
