@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
 project(ISSofaPython)
-message("gjdklsfjghlkjsdklfjhkljsdfgjhklxdfjghkljdfkljghkldfjgklhjdfkgjhdfkjgh")
 set( ISSOFAPYTHON_MAJOR_VERSION 0 )
 set( ISSOFAPYTHON_MINOR_VERSION 0 )
 set( ISSOFAPYTHON_BUILD_VERSION 1 )
