@@ -62,9 +62,6 @@ void PythonSceneLoader::getExtensionList(ExtensionList* list)
 
 sofa::simulation::Node::SPtr PythonSceneLoader::load(const char* filename)
 {
-    pybind11::finalize_interpreter();
-    pybind11::initialize_interpreter();
-
     using sofa::helper::system::SetDirectory;
     using sofa::simulation::tree::GNode;
     using sofa::core::objectmodel::New;
