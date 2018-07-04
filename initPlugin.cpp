@@ -18,12 +18,12 @@ namespace python
 //Here are just several convenient functions to help user to know what contains the plugin
 
 extern "C" {
-    SOFA_BUILD_ISSOFAPYTHONPLUGIN void initExternalModule();
-    SOFA_BUILD_ISSOFAPYTHONPLUGIN const char* getModuleName();
-    SOFA_BUILD_ISSOFAPYTHONPLUGIN const char* getModuleVersion();
-    SOFA_BUILD_ISSOFAPYTHONPLUGIN const char* getModuleLicense();
-    SOFA_BUILD_ISSOFAPYTHONPLUGIN const char* getModuleDescription();
-    SOFA_BUILD_ISSOFAPYTHONPLUGIN const char* getModuleComponentList();
+    ISSOFAPYTHONPLUGIN_API void initExternalModule();
+    ISSOFAPYTHONPLUGIN_API const char* getModuleName();
+    ISSOFAPYTHONPLUGIN_API const char* getModuleVersion();
+    ISSOFAPYTHONPLUGIN_API const char* getModuleLicense();
+    ISSOFAPYTHONPLUGIN_API const char* getModuleDescription();
+    ISSOFAPYTHONPLUGIN_API const char* getModuleComponentList();
 }
 
 void initExternalModule()
