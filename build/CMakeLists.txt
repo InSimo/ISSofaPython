@@ -129,7 +129,7 @@ configure_package_config_file(ISSofaPythonConfig.cmake.in
                               INSTALL_DESTINATION ${ISSOFAPYTHON_INSTALL_CMAKE_DIR}
                               PATH_VARS ISSOFAPYTHON_INCLUDE_DIR)
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ISSofaPythonPlugin
     COMPONENT ISSofaPython_libraries
     EXPORT  ISSofaPythonTargets
     RUNTIME DESTINATION "${ISSOFAPYTHON_INSTALL_BIN_DIR}"
