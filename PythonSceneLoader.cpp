@@ -6,6 +6,7 @@
 
 #include "PythonSceneLoader.h"
 #include <sofa/helper/system/SetDirectory.h>
+#include <sofa/helper/system/FileSystem.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
 
@@ -17,7 +18,7 @@ using sptr = boost::intrusive_ptr<T>;
 
 }
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true);
+PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true)
 
 
 namespace sofa
@@ -31,7 +32,41 @@ using sofa::simulation::SceneLoader;
 PythonSceneLoader::PythonSceneLoader()
 {
     pybind11::initialize_interpreter();
+    // Activation of local virtualenv paths, if available
+    std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
+    auto sys = pybind11::module::import("sys");
 
+    std::string site_packages = prefix;
+#ifdef __WIN32__
+    site_packages += "Lib/site-packages";
+#else
+    std::string sysversion = sys.attr("version").cast<pybind11::str>();
+    site_packages += "lib/python";
+    site_packages += sysversion.substr(0,3);
+    site_packages += "/site-packages";
+#endif
+    if (sofa::helper::system::FileSystem::isDirectory(site_packages))
+    {
+        std::cout << "ISSofaPython: setting prefix: " << prefix << std::endl;
+        sys.attr("prefix") = prefix;
+        std::cout << "ISSofaPython: addsitedir: " << site_packages << std::endl;
+        pybind11::module::import("site").attr("addsitedir")(site_packages);
+    }
+    std::vector<std::string> localPath;
+#ifdef __WIN32__
+    localPath.push_back(sofa::helper::system::SetDirectory::GetRelativeFromProcess("."));
+#else
+    localPath.push_back(sofa::helper::system::SetDirectory::GetRelativeFromProcess("../lib"));
+#endif
+    if (!localPath.empty())
+    {
+        auto syspath = pybind11::module::import("sys").attr("path").cast<pybind11::list>();
+        for (const std::string& s: localPath)
+        {
+            std::cout << "ISSofaPython: adding to python path: " << s << std::endl;
+            syspath.append(s);
+        }
+    }
 }
 
 PythonSceneLoader::~PythonSceneLoader()
