@@ -50,7 +50,8 @@ PythonSceneLoader::PythonSceneLoader()
     site_packages += sysversion.substr(0,3);
     site_packages += "/site-packages";
 #endif
-    if (sofa::helper::system::FileSystem::isDirectory(site_packages))
+    if (sofa::helper::system::FileSystem::exists(site_packages) &&
+        sofa::helper::system::FileSystem::isDirectory(site_packages))
     {
         std::cout << "ISSofaPython: setting prefix: " << prefix << std::endl;
         sys.attr("prefix") = prefix;
