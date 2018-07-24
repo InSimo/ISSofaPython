@@ -34,10 +34,15 @@ PythonSceneLoader::PythonSceneLoader()
     pybind11::initialize_interpreter();
     // Activation of local virtualenv paths, if available
     std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
+    // Handle case where executables are in <builddir>/bin/<config>
+    if (sofa::helper::system::SetDirectory::GetFileName(prefix.c_str()) == "bin")
+    {
+        prefix = sofa::helper::system::SetDirectory::GetParentDir(prefix.c_str());
+    }
     auto sys = pybind11::module::import("sys");
 
     std::string site_packages = prefix;
-#ifdef __WIN32__
+#ifdef _WIN32
     site_packages += "Lib/site-packages";
 #else
     std::string sysversion = sys.attr("version").cast<pybind11::str>();
@@ -53,7 +58,7 @@ PythonSceneLoader::PythonSceneLoader()
         pybind11::module::import("site").attr("addsitedir")(site_packages);
     }
     std::vector<std::string> localPath;
-#ifdef __WIN32__
+#ifdef _WIN32
     localPath.push_back(sofa::helper::system::SetDirectory::GetRelativeFromProcess("."));
 #else
     localPath.push_back(sofa::helper::system::SetDirectory::GetRelativeFromProcess("../lib"));
