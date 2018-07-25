@@ -50,6 +50,18 @@ pybind11::object getRoot()
     return bindDataAndLinks(gNodeRoot);
 }
 
+pybind11::object getChildren(sofa::sptr<Node> node)
+{
+    sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
+    sofa::simulation::Node::Children children = gNode->getChildren();
+    pybind11::list pyList;
+    for (auto& child : children)
+    {
+        pyList.append(child);
+    }
+    return pyList;
+}
+
 pybind11::object createChild(sofa::sptr<Node> node, const std::string& name)
 {
     sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
@@ -71,12 +83,12 @@ void initBindingGNode(pybind11::module& m)
          .def("addChild", [](GNode* instance, GNode::SPtr child) { instance->addChild(child); } )
          .def("removeChild", [](GNode* instance, GNode::SPtr child) { instance->removeChild(child); } )
          .def("createChild", &internal::createChild)
+         .def("getChildren", &internal::getChildren)
          ;
 
     m.def("createRootNode", &internal::createRootNode);
     m.def("createNode", &internal::createNode);
     m.def("getRoot", &internal::getRoot);
-
 }
 
 }
