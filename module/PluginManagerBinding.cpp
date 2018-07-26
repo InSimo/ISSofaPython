@@ -18,7 +18,7 @@ using sofa::helper::system::PluginManager;
 
 void findPlugin(PluginManager* pluginManager, std::string& path, const std::string& suffix = PluginManager::getDefaultSuffix())
 {
-    bool found = pluginManager->findPlugin(path, suffix);
+    pluginManager->findPlugin(path, suffix);
 }
 
 bool hasPlugin(PluginManager* pluginManager, std::string& path, bool finalPath = false)
@@ -34,7 +34,7 @@ void loadPlugin(PluginManager* pluginManager, const std::string& path, bool fina
         return;
     }
 
-    const bool loaded = pluginManager->loadPlugin(pathCopy, nullptr, false);
+    const bool loaded = pluginManager->loadPlugin(pathCopy, &std::cerr, false);
     if (!loaded)
     {
         throw std::invalid_argument("loadPlugin failed with " + path);
