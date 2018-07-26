@@ -16,6 +16,9 @@ using sofa::core::objectmodel::Base;
 using sofa::core::objectmodel::New;
 using sofa::core::objectmodel::BaseNode;
 
+namespace internal
+{
+
 std::string getPath(const BaseObject* obj)
 {
     std::string path;
@@ -25,10 +28,6 @@ std::string getPath(const BaseObject* obj)
     }
     return path;
 }
-
-
-namespace internal
-{
 
 pybind11::object getObject(std::string path)
 {
@@ -44,6 +43,17 @@ pybind11::object getObject(std::string path)
     {
         return pybind11::none();
     }
+}
+
+pybind11::object getSlaves(sofa::sptr<BaseObject> obj)
+{
+    auto slaves = obj->getSlaves();
+    pybind11::list pyList;
+    for (auto& slave : slaves)
+    {
+        pyList.append(slave);
+    }
+    return pyList;
 }
 
 }
@@ -62,7 +72,8 @@ void initBindingBaseObject(pybind11::module& m)
         .def("reset",&BaseObject::reset)
         .def("getMutableContext", pybind11::overload_cast<>( &BaseObject::getContext), pybind11::return_value_policy::reference)
         .def("getContext", pybind11::overload_cast<>(&BaseObject::getContext, pybind11::const_), pybind11::return_value_policy::reference)
-        .def("getPath", &getPath)
+        .def("getPath", &internal::getPath)
+        .def("getSlaves", &internal::getSlaves)
         ;
 
     m.def("getObject", &internal::getObject);
