@@ -21,7 +21,7 @@ using sptr = boost::intrusive_ptr<T>;
 
 }
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true);
+PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true)
 
 
 namespace sofa
