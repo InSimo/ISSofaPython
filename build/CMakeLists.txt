@@ -93,7 +93,27 @@ set( PLUGIN_SOURCE_FILES
 add_library(ISSofaPythonPlugin SHARED ${PLUGIN_HEADER_FILES} ${PLUGIN_SOURCE_FILES})
 target_link_libraries(ISSofaPythonPlugin PRIVATE pybind11::embed SofaSimulationTree)
 
-set_target_properties( ISSofaPythonPlugin PROPERTIES COMPILE_FLAGS "-DSOFA_BUILD_ISSOFAPYTHONPLUGIN")
+set(ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS "SOFA_BUILD_ISSOFAPYTHONPLUGIN")
+
+# On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
+# This code find its SONAME using readelf
+message("Getting python library SONAME")
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
+    if (PYTHON_LIBRARIES)
+        execute_process(COMMAND bash -c "readelf -d ${PYTHON_LIBRARIES} | awk '$2==\"(SONAME)\" { print substr(\$5,2,length(\$5)-2) }'"
+            RESULT_VARIABLE SONAME_ERRORCODE
+            OUTPUT_VARIABLE PYTHON_LIBRARY_SONAME
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if (SONAME_ERRORCODE)
+            message("Failed to get python library SONAME")
+        else()
+            list(APPEND ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS "PYTHON_LIBRARY_SONAME=\"${PYTHON_LIBRARY_SONAME}\"")
+            message("python library SONAME: ${PYTHON_LIBRARY_SONAME}")
+        endif()
+    endif()
+endif()
+
+set_property(TARGET ISSofaPythonPlugin PROPERTY COMPILE_DEFINITIONS ${ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS})
 set_target_properties( ISSofaPythonPlugin PROPERTIES DEBUG_POSTFIX "_d" )
 
 

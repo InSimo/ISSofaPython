@@ -9,6 +9,7 @@
 #include <sofa/helper/system/FileSystem.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
+#include <dlfcn.h>
 
 #include <pybind11/embed.h>
 #include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
@@ -34,6 +35,11 @@ using sofa::simulation::SceneLoader;
 
 PythonSceneLoader::PythonSceneLoader()
 {
+    // On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
+#ifdef PYTHON_LIBRARY_SONAME
+    std::cout << "ISSofaPython: loading python library: " << PYTHON_LIBRARY_SONAME << std::endl;
+    dlopen(PYTHON_LIBRARY_SONAME, RTLD_LAZY | RTLD_GLOBAL);
+#endif
     pybind11::initialize_interpreter();
     // Activation of local virtualenv paths, if available
     std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
