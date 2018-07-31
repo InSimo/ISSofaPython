@@ -84,6 +84,7 @@ void initBindingGNode(pybind11::module& m)
          .def("removeChild", [](GNode* instance, GNode::SPtr child) { instance->removeChild(child); } )
          .def("createChild", &internal::createChild)
          .def("getChildren", &internal::getChildren)
+         .def("getPathName", &Node::getPathName)
          ;
 
     m.def("createRootNode", &internal::createRootNode);
