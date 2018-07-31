@@ -8,7 +8,6 @@
 #define ISSOFA_PYTHON_PYTHONSCENELOADER_H
 
 #include <sofa/simulation/common/SceneLoaderFactory.h>
-#include <pybind11/embed.h>
 
 namespace sofa
 {
@@ -30,7 +29,7 @@ public:
 
     void getExtensionList(ExtensionList* list) override;
 
-    sofa::simulation::Node::SPtr load(const char *filename) override;
+    sofa::simulation::Node::SPtr load(const char *filename, const std::vector<std::string>& sceneArguments) override;
 };
 
 

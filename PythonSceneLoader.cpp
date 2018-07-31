@@ -10,6 +10,9 @@
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
 
+#include <pybind11/embed.h>
+#include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
+
 namespace sofa
 {
 
@@ -100,8 +103,7 @@ void PythonSceneLoader::getExtensionList(ExtensionList* list)
     list->push_back("py");
 }
 
-
-sofa::simulation::Node::SPtr PythonSceneLoader::load(const char* filename)
+sofa::simulation::Node::SPtr PythonSceneLoader::load(const char *filename, const std::vector<std::string>& sceneArguments)
 {
     using sofa::helper::system::SetDirectory;
     using sofa::simulation::tree::GNode;
@@ -117,17 +119,13 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char* filename)
 
     try
     {
-
         pybind11::module sys = pybind11::module::import("sys");
         sys.attr("path").cast<pybind11::list>().append(fileDir);
 
+        sys.attr("argv") = sceneArguments;
+
         auto fileModule = pybind11::module::import(file.c_str());
-
-        auto createScene = fileModule.attr("createScene");
-
-        pybind11::object pyGNode = pybind11::cast(gNode);
-
-        pybind11::object result  = createScene(pyGNode);
+        fileModule.attr("createScene")(gNode);
     }
     catch (pybind11::error_already_set& e)
     {
@@ -139,9 +137,6 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char* filename)
     return gNode;
 }
 
-
-
 }
-
 
 }
