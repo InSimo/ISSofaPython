@@ -7,6 +7,7 @@
 #include "PythonSceneLoader.h"
 #include <sofa/helper/system/SetDirectory.h>
 #include <sofa/helper/system/FileSystem.h>
+#include <sofa/helper/system/DynamicLibrary.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
 #ifdef PYTHON_LIBRARY_SONAME
@@ -39,7 +40,7 @@ PythonSceneLoader::PythonSceneLoader()
     // On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
 #ifdef PYTHON_LIBRARY_SONAME
     std::cout << "ISSofaPython: loading python library: " << PYTHON_LIBRARY_SONAME << std::endl;
-    dlopen(PYTHON_LIBRARY_SONAME, RTLD_LAZY | RTLD_GLOBAL);
+    sofa::helper::system::DynamicLibrary::DynamicLibrary::load(PYTHON_LIBRARY_SONAME, true);
 #endif
     pybind11::initialize_interpreter();
     // Activation of local virtualenv paths, if available
