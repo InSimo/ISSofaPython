@@ -9,8 +9,9 @@
 #include <sofa/helper/system/FileSystem.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
+#ifdef PYTHON_LIBRARY_SONAME
 #include <dlfcn.h>
-
+#endif
 #include <pybind11/embed.h>
 #include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
 
