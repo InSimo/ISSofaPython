@@ -116,6 +116,13 @@ endif()
 set_property(TARGET ISSofaPythonPlugin PROPERTY COMPILE_DEFINITIONS ${ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS})
 set_target_properties( ISSofaPythonPlugin PROPERTIES DEBUG_POSTFIX "_d" )
 
+# Add the plugin to SOFA_PRELOAD_ENV so that it is automatically preloaded by runSofa
+set_property(TARGET SofaHelper APPEND PROPERTY SOFA_PRELOAD "ISSofaPythonPlugin")
+#if(${SOFA_PRELOAD_ENV} MATCHES "ISSofaPythonPlugin")
+#else()
+#  set(SOFA_PRELOAD_ENV "${SOFA_PRELOAD_ENV};ISSofaPythonPlugin" CACHE STRING "" FORCE)
+#endif()
+#set(SOFA_PRELOAD_ENV "" CACHE STRING "A list (semicolon separated) of preloaded sofa plugins to write in sofa.env file.")
 
 include(CMakePackageConfigHelpers)
 
