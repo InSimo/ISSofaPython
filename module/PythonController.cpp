@@ -36,7 +36,15 @@ void PythonController::handleEvent(SofaEvent* e)
 
     if (it!= m_callbackMap.end())
     {
-        it->second(e);
+        try
+        {
+           pybind11::gil_scoped_acquire acquire;
+           it->second( e );
+        }
+        catch( const pybind11::error_already_set& e )
+        {
+            serr << "PythonController: Python exception in callback:\n" << e.what() << sendl;
+        }
     }
 }
 
