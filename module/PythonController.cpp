@@ -50,6 +50,8 @@ void PythonController::handleEvent(SofaEvent* e)
 
 void PythonController::cleanup()
 {
+    pybind11::gil_scoped_acquire gil;
+
     // The callback map is likely to hold function pointers that are member methods of a 
     // python class that derive from PythonController.
     // We therefore must clear it to ensure proper object destruction.
