@@ -37,7 +37,10 @@ public:
 
     typedef std::function<void(SofaEvent*)> HandleEventCallback;
 
-    void addCallback(sofa::core::objectmodel::Event*, const HandleEventCallback& callback);
+    void addCallback(const sofa::core::objectmodel::Event*, const HandleEventCallback& callback);
+    void addCallback(const std::string& className, const HandleEventCallback& callback);
+    void removeCallback(const sofa::core::objectmodel::Event* e);
+    void removeCallback(const std::string& className);
 
 protected:
     PythonController();

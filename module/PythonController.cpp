@@ -49,22 +49,41 @@ void PythonController::cleanup()
 }
 
 
-void PythonController::addCallback(sofa::core::objectmodel::Event* e, const HandleEventCallback& callback)
+void PythonController::addCallback(const sofa::core::objectmodel::Event* e, const HandleEventCallback& callback)
 {
     m_callbackMap[std::string(e->getClassName())] = callback;
 }
 
+void PythonController::addCallback(const std::string& className, const HandleEventCallback& callback)
+{
+    m_callbackMap[className] = callback;
+}
+
+void PythonController::removeCallback(const sofa::core::objectmodel::Event* e)
+{
+    m_callbackMap.erase(std::string(e->getClassName()));
+}
+
+void PythonController::removeCallback(const std::string& className)
+{
+    m_callbackMap.erase(className);
+}
 
 void initBindingPythonController(pybind11::module& m)
 {
     using sofa::core::objectmodel::BaseObject;
     using sofa::core::objectmodel::New;
+    using sofa::python::PythonController;
+    using HandleEventCallback = PythonController::HandleEventCallback;
 
     pybind11::class_<PythonController, BaseObject,
         PySofaBaseObject<PythonController>, // trampoline "alias" class 
         sofa::sptr<PythonController> >(m, "PythonController")
         .def(pybind11::init<>())
-        .def("addCallback", &PythonController::addCallback)
+        .def("addCallback", pybind11::overload_cast<const sofa::core::objectmodel::Event*, const HandleEventCallback&>(&PythonController::addCallback))
+        .def("addCallback", pybind11::overload_cast<const std::string&, const HandleEventCallback&>(&PythonController::addCallback))
+        .def("removeCallback", pybind11::overload_cast<const sofa::core::objectmodel::Event*>(&PythonController::removeCallback))
+        .def("removeCallback", pybind11::overload_cast<const std::string&>(&PythonController::removeCallback))
         ;
 }
 
