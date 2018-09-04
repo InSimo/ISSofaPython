@@ -103,7 +103,7 @@ void PythonSceneLoader::getExtensionList(ExtensionList* list)
     list->push_back("py");
 }
 
-sofa::simulation::Node::SPtr PythonSceneLoader::load(const char *filename, const std::vector<std::string>& sceneArguments)
+sofa::simulation::Node::SPtr PythonSceneLoader::load(const char *filename, const SceneArguments& sceneArguments)
 {
     using sofa::helper::system::SetDirectory;
     using sofa::simulation::tree::GNode;

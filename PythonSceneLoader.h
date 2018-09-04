@@ -29,7 +29,7 @@ public:
 
     void getExtensionList(ExtensionList* list) override;
 
-    sofa::simulation::Node::SPtr load(const char *filename, const std::vector<std::string>& sceneArguments) override;
+    sofa::simulation::Node::SPtr load(const char *filename, const SceneArguments& sceneArguments) override;
 };
 
 
