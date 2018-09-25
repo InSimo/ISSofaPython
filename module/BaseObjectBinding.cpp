@@ -2,6 +2,9 @@
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/objectmodel/BaseContext.h>
 #include <sofa/core/objectmodel/BaseNode.h>
+#include <sofa/simulation/tree/TreeSimulation.h>
+
+
 namespace sofa
 {
 namespace python
@@ -23,6 +26,28 @@ std::string getPath(const BaseObject* obj)
     return path;
 }
 
+
+namespace internal
+{
+
+pybind11::object getObject(std::string path)
+{
+    sofa::sptr<sofa::simulation::Node> root = sofa::simulation::tree::getSimulation()->GetRoot();
+    BaseObject* obj;
+    root->findLinkDest(obj, path, nullptr);
+    // sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
+    if(obj)
+    {
+        return bindDataAndLinks(obj);
+    }
+    else
+    {
+        return pybind11::none();
+    }
+}
+
+}
+
 void initBindingBaseObject(pybind11::module& m)
 {
     pybind11::class_<BaseObject, Base, 
@@ -39,6 +64,8 @@ void initBindingBaseObject(pybind11::module& m)
         .def("getContext", pybind11::overload_cast<>(&BaseObject::getContext, pybind11::const_), pybind11::return_value_policy::reference)
         .def("getPath", &getPath)
         ;
+
+    m.def("getObject", &internal::getObject);
 }
 
 }

@@ -5,6 +5,8 @@
 *******************************************************************************/
 
 #include "BaseNodeBinding.h"
+#include <sofa/simulation/common/Node.h>
+#include <sofa/simulation/tree/TreeSimulation.h>
 
 namespace sofa
 {
@@ -14,6 +16,30 @@ namespace python
 
 using sofa::core::objectmodel::BaseNode;
 using sofa::core::objectmodel::Base;
+
+
+
+namespace internal
+{
+
+pybind11::object getNode(std::string path)
+{
+    sofa::sptr<sofa::simulation::Node> root = sofa::simulation::tree::getSimulation()->GetRoot();
+    sofa::simulation::Node* node;
+    root->findLinkDest(node, path, nullptr);
+    // sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
+    if(node)
+    {
+        return bindDataAndLinks(node);
+    }
+    else
+    {
+        return pybind11::none();
+    }
+}
+
+}
+
 
 void initBindingBaseNode(pybind11::module& m)
 {
@@ -27,6 +53,8 @@ void initBindingBaseNode(pybind11::module& m)
         .def("addChild", &BaseNode::addChild)
         .def("removeChild", &BaseNode::removeChild)
         ;
+    
+    m.def("getNode", &internal::getNode);
 }
 
 }

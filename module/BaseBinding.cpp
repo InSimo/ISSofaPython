@@ -70,7 +70,7 @@ void genericBindDataAndLinks(pybind11::object& pyObj, const helper::vector<core:
     }
 }
 
-pybind11::object bindDataAndLinks(sofa::sptr<simulation::tree::GNode > obj)
+pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseNode > obj)
 {
     pybind11::object pyObj = pybind11::cast(obj);
     genericBindDataAndLinks(pyObj, obj->getDataFields(), obj->getLinks(), obj->getName());
