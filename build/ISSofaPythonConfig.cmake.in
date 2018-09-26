@@ -11,13 +11,6 @@ if(HAS_ISSOFAPYTHON_CMAKE_MODULE_PATH EQUAL -1)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 endif()
 
-# global variable to keep track of the last added package by the 
-# issofapython_add_package function from ISSofaPythonSetupTools.
-# with the current approach this variable is used to create dependencies so that
-# no concurrent write is made in the generated user site packages easy-install.pth 
-# by python pip.
-set(GLOBAL property ISSOFAPYTHON_LAST_ADDED_PACKAGE)
-
 # make the issofapython_add_package method reachable
 include(ISSofaPythonSetupTools)
 
