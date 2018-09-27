@@ -33,6 +33,7 @@ using sofa::defaulttype::AbstractValueTypeInfo;
 using sofa::defaulttype::AbstractStructureTypeInfo;
 
 
+
 template< typename PyArithmeticType >
 struct PyArithmeticTypeCaster;
 
@@ -110,6 +111,16 @@ bool setFinalValueFromPyArithmetic(void* dataPtr, PyArithmeticType pyArithmetic,
 
     if (typeInfo && typeInfo->ValidInfo() )
     {
+        std::size_t dataSize = typeInfo->finalSize(dataPtr);
+
+        // Special case when we directly assign a python object which wraps a fundamental type 
+        // to a BaseData which wraps a container of the same type.
+        // The container needs to be resized first before copying the value.
+        if (dataSize == 0 && index == 0)
+        {
+            typeInfo->setFinalSize(dataPtr, 1);
+        }
+
         if (typeInfo->Scalar())
         {            
             typeInfo->setFinalValueScalar(dataPtr, index,
