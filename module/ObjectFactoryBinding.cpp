@@ -6,8 +6,11 @@
 
 #include "ObjectFactoryBinding.h"
 #include "BaseObjectBinding.h"
-#include <sofa/core/ObjectFactory.h>
+#include "BaseDataBinding.h"
 #include "BaseObjectDescriptionBinding.h"
+#include <sofa/core/ObjectFactory.h>
+#include <sofa/core/objectmodel/Base.h>
+#include <sofa/core/objectmodel/BaseData.h>
 
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
@@ -46,6 +49,7 @@ using sofa::core::objectmodel::BaseClass;
 using sofa::core::objectmodel::BaseContext;
 using sofa::core::objectmodel::BaseObject;
 using sofa::core::objectmodel::BaseObjectDescription;
+using sofa::core::objectmodel::BaseData;
 
 std::vector< const BaseClass* > getClass(ObjectFactory* factory, std::string className)
 {
@@ -66,12 +70,39 @@ std::vector< const BaseClass* > getClass(ObjectFactory* factory, std::string cla
 
 pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11::args args, pybind11::kwargs kwargs)
 {
-    BaseObjectDescription desc = createBaseObjectDescription(args, kwargs);
-    sofa::sptr<BaseObject > obj = factory->createObject(ctx, &desc);
+    BaseObjectDescription objDescription = createBaseObjectDescription(args,kwargs);
+
+    sofa::sptr<BaseObject > obj = factory->createObject(ctx, &objDescription);
 
     if (obj == nullptr)
     {
-        throw std::invalid_argument("createObject failed with: " + desc.getName());
+        throw std::invalid_argument("createObject failed with: " + objDescription.getName());
+    }
+
+    pybind11::dict dict(kwargs);
+
+    // process elements in the dict that are not taken care of by BaseObjectDescription
+    for (auto item : dict)
+    {
+        std::string attr = std::string(pybind11::str(item.first));
+        
+        if (!isPythonTypeHandledByBaseObjectDescription(item.second))
+        {
+            pybind11::object value = pybind11::reinterpret_borrow<pybind11::object>(item.second);
+            // it can only be a data, since links are initialized from strings, which are taken care of by BaseObjectDescription.
+            BaseData* data   = obj->findData(attr); 
+            if (data)
+            {
+                // will throw invalid_argument if the python object cannot be converted to something compatible with the data type
+                setDataValueFromPyObject(data, value);
+            }
+            else
+            {
+                std::string valueAsString = std::string(pybind11::str(item.second));
+                std::string errorMessage = "Could not read value for data field " + attr + ": " + valueAsString;
+                throw std::invalid_argument("createObject failed " + errorMessage);
+            }
+        }
     }
 
     // store the source location of this object

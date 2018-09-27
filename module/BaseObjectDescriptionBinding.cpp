@@ -5,6 +5,7 @@
 *******************************************************************************/
 
 #include "BaseObjectDescriptionBinding.h"
+#include "BaseDataBinding.h"
 #include <sofa/core/objectmodel/BaseClass.h>
 
 namespace sofa
@@ -15,6 +16,39 @@ namespace python
 using sofa::core::objectmodel::BaseObjectDescription;
 using sofa::core::objectmodel::BaseClass;
 
+
+
+bool isStringType(pybind11::handle h)
+{
+    return pybind11::isinstance<pybind11::str>(h);
+}
+
+bool isFundamentalType(pybind11::handle h)
+{
+    const bool isInt    = pybind11::isinstance<pybind11::int_>(h);
+    const bool isScalar = pybind11::isinstance<pybind11::float_>(h);
+    const bool isBool   = pybind11::isinstance<pybind11::bool_>(h);
+    return isInt || isScalar || isBool;
+}
+
+bool isPythonTypeHandledByBaseObjectDescription(pybind11::handle h)
+{
+    return isFundamentalType(h) || isStringType(h);
+}
+
+std::string getDataStringRepresentation(pybind11::handle h)
+{
+    const bool isBool =  pybind11::isinstance<pybind11::bool_>(h);
+    if (isBool)
+    {
+        bool b(pybind11::reinterpret_borrow<pybind11::bool_>(h));
+        return b ? "1" : "0";
+    }
+    else
+    {
+        return std::string(pybind11::str(h));
+    }
+}
 
 BaseObjectDescription createBaseObjectDescription(pybind11::args args, pybind11::kwargs kwargs)
 {
@@ -33,8 +67,11 @@ BaseObjectDescription createBaseObjectDescription(pybind11::args args, pybind11:
         for (auto item : dict)
         {
             std::string attr = std::string(pybind11::str(item.first));
-            std::string val  = std::string(pybind11::str(item.second));
-            objDescription.setAttribute(attr, val.c_str());
+            if(isPythonTypeHandledByBaseObjectDescription(item.second) )
+            {
+                std::string val  = getDataStringRepresentation(item.second);
+                objDescription.setAttribute(attr, val.c_str());
+            }
         }
     }
 

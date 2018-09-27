@@ -16,8 +16,9 @@ namespace sofa
 namespace python
 {
 
-
 void initBindingBaseObjectDescription(pybind11::module& m);
+
+bool isPythonTypeHandledByBaseObjectDescription(pybind11::handle);
 
 sofa::core::objectmodel::BaseObjectDescription createBaseObjectDescription(pybind11::args args, pybind11::kwargs kwargs);
 
