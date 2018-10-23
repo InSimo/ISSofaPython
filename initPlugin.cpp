@@ -7,6 +7,7 @@
 #include "initPlugin.h"
 #include <sofa/core/ObjectFactory.h>
 #include "PythonSceneLoader.h"
+#include <pybind11/embed.h>
 
 namespace sofa
 {
@@ -14,6 +15,7 @@ namespace sofa
 namespace python
 {
 
+sofa::helper::Creator<sofa::simulation::SceneLoaderFactory, PythonSceneLoader> creatorPythonSceneLoader("PythonSceneLoader", false, 0, "Scene Loader for py simulation files", { "py" });
 
 //Here are just several convenient functions to help user to know what contains the plugin
 
@@ -31,10 +33,7 @@ void initExternalModule()
     static bool first = true;
     if (first)
     {
-        using sofa::simulation::SceneLoaderFactory;
-        using sofa::simulation::SceneLoader;
-        // memory bleeding to death yo.
-        SceneLoader* pythonSceneLoader = SceneLoaderFactory::getInstance()->addEntry(new PythonSceneLoader());
+        pybind11::initialize_interpreter();
         first = false;
     }
 

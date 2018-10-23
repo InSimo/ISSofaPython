@@ -13,7 +13,6 @@
 #ifdef PYTHON_LIBRARY_SONAME
 #include <dlfcn.h>
 #endif
-#include <pybind11/embed.h>
 #include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
 
 namespace sofa
@@ -42,7 +41,6 @@ PythonSceneLoader::PythonSceneLoader()
     std::cout << "ISSofaPython: loading python library: " << PYTHON_LIBRARY_SONAME << std::endl;
     sofa::helper::system::DynamicLibrary::DynamicLibrary::load(PYTHON_LIBRARY_SONAME, true);
 #endif
-    pybind11::initialize_interpreter();
     // Activation of local virtualenv paths, if available
     std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
     // Handle case where executables are in <builddir>/bin/<config>
@@ -88,9 +86,6 @@ PythonSceneLoader::PythonSceneLoader()
 
 PythonSceneLoader::~PythonSceneLoader()
 {
-    // we will never reach that point... 
-    // SceneLoaderFactory bleeds memory, and SceneLoader has no virtual destructor...
-    pybind11::finalize_interpreter(); 
 }
 
 bool PythonSceneLoader::canLoadFileExtension(const char *extension)
