@@ -33,7 +33,11 @@ void initExternalModule()
     static bool first = true;
     if (first)
     {
-        pybind11::initialize_interpreter();
+        // NOTE: catch exceptions due to already initialized interpreter
+        // which can occur if running simulation with H3D
+        try {
+          pybind11::initialize_interpreter();
+        } catch( ... ) {}
         first = false;
     }
 
