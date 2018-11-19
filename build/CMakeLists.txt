@@ -101,7 +101,7 @@ if (ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY)
 endif()
 
 
-set(ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS "SOFA_BUILD_ISSOFAPYTHONPLUGIN")
+target_compile_definitions(ISSofaPythonPlugin PRIVATE "SOFA_BUILD_ISSOFAPYTHONPLUGIN")
 
 # On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
 # This code find its SONAME using readelf
@@ -115,13 +115,11 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
         if (SONAME_ERRORCODE)
             message("Failed to get python library SONAME")
         else()
-            list(APPEND ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS "PYTHON_LIBRARY_SONAME=\"${PYTHON_LIBRARY_SONAME}\"")
+            target_compile_definitions(ISSofaPythonPlugin PRIVATE "PYTHON_LIBRARY_SONAME=\"${PYTHON_LIBRARY_SONAME}\"")
             message("python library SONAME: ${PYTHON_LIBRARY_SONAME}")
         endif()
     endif()
 endif()
-
-target_compile_definitions(ISSofaPythonPlugin PRIVATE ${ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS})
 
 set_target_properties( ISSofaPythonPlugin PROPERTIES DEBUG_POSTFIX "_d" )
 
