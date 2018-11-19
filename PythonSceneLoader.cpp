@@ -82,6 +82,9 @@ PythonSceneLoader::PythonSceneLoader()
             syspath.append(s);
         }
     }
+#ifdef ISSOFAPYTHON_DONT_WRITE_BYTECODE
+    sys.attr("dont_write_bytecode") = true;
+#endif
 }
 
 PythonSceneLoader::~PythonSceneLoader()

@@ -17,6 +17,8 @@ set(ISSOFAPYTHON_INSTALL_BIN_DIR     bin                      CACHE PATH "Instal
 set(ISSOFAPYTHON_INSTALL_INCLUDE_DIR include                  CACHE PATH "Installation directory for header files relative to CMAKE_INSTALL_PREFIX variable")
 set(ISSOFAPYTHON_INSTALL_CMAKE_DIR   ${ISSOFAPYTHON_INSTALL_LIB_DIR}/cmake/ISSofaPython )
 
+option(ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY "Allow the generation of cached python bytecode ( .pyc files ) for release builds only" ON)
+
 get_filename_component(ISSOFAPYTHON_ACTUAL_SOURCE_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
 set(PYBIND11_INSTALL ON CACHE BOOL "Install pybind11 header files?" FORCE)
@@ -93,6 +95,12 @@ set( PLUGIN_SOURCE_FILES
 add_library(ISSofaPythonPlugin SHARED ${PLUGIN_HEADER_FILES} ${PLUGIN_SOURCE_FILES})
 target_link_libraries(ISSofaPythonPlugin PRIVATE pybind11::embed SofaSimulationTree)
 
+if (ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY)
+    target_compile_definitions(ISSofaPythonPlugin PRIVATE $<$<CONFIG:Debug>:ISSOFAPYTHON_DONT_WRITE_BYTECODE>)
+    target_compile_definitions(ISSofaPythonPlugin PRIVATE $<$<CONFIG:RelWithDebInfo>:ISSOFAPYTHON_DONT_WRITE_BYTECODE>)
+endif()
+
+
 set(ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS "SOFA_BUILD_ISSOFAPYTHONPLUGIN")
 
 # On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
@@ -113,7 +121,8 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
     endif()
 endif()
 
-set_property(TARGET ISSofaPythonPlugin PROPERTY COMPILE_DEFINITIONS ${ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS})
+target_compile_definitions(ISSofaPythonPlugin PRIVATE ${ISSOFAPYTHON_PLUGIN_COMPILE_DEFINITIONS})
+
 set_target_properties( ISSofaPythonPlugin PROPERTIES DEBUG_POSTFIX "_d" )
 
 # Add the plugin to SOFA_PRELOAD_ENV so that it is automatically preloaded by runSofa
