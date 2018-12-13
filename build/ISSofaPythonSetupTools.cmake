@@ -10,7 +10,7 @@ if(NOT PYTHONINTERP_FOUND)
 endif()
 
 option(ISSOFAPYTHON_USE_VIRTUALENV "Use python virtualenv to install local python packages" OFF)
-set(ISSOFAPYTHON_VIRTUALENV_DIR "${CMAKE_BINARY_DIR}" CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is ON: directory to use for python installation (default to build directory)")
+set(ISSOFAPYTHON_VIRTUALENV_DIR "${CMAKE_BINARY_DIR}/python-venv" CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is ON: directory to use for python installation (defaults to <build-directory>/python-venv/)")
 cmake_dependent_option(ISSOFAPYTHON_INSTALL_USER "If ISSOFAPYTHON_USE_VIRTUALENV is OFF: use --user option when installing python packages" ON
                        "NOT ISSOFAPYTHON_USE_VIRTUALENV" OFF)
 set(ISSOFAPYTHON_INSTALL_PREFIX_DIR ${CMAKE_BINARY_DIR} CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is OFF and ISSOFAPYTHON_INSTALL_USER is OFF: directory to use for python installation (default to build directory)")
