@@ -6,7 +6,6 @@
 
 #include "PythonSceneLoader.h"
 #include <sofa/helper/system/SetDirectory.h>
-#include <sofa/helper/system/FileSystem.h>
 #include <sofa/helper/system/DynamicLibrary.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
@@ -41,32 +40,7 @@ PythonSceneLoader::PythonSceneLoader()
     std::cout << "ISSofaPython: loading python library: " << PYTHON_LIBRARY_SONAME << std::endl;
     sofa::helper::system::DynamicLibrary::DynamicLibrary::load(PYTHON_LIBRARY_SONAME, true);
 #endif
-    // Activation of local virtualenv paths, if available
-    std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
-    // Handle case where executables are in <builddir>/bin/<config>
-    if (sofa::helper::system::SetDirectory::GetFileName(prefix.c_str()) == "bin")
-    {
-        prefix = sofa::helper::system::SetDirectory::GetParentDir(prefix.c_str());
-    }
     auto sys = pybind11::module::import("sys");
-
-    std::string site_packages = prefix;
-#ifdef _WIN32
-    site_packages += "Lib/site-packages";
-#else
-    std::string sysversion = sys.attr("version").cast<pybind11::str>();
-    site_packages += "lib/python";
-    site_packages += sysversion.substr(0,3);
-    site_packages += "/site-packages";
-#endif
-    if (sofa::helper::system::FileSystem::exists(site_packages) &&
-        sofa::helper::system::FileSystem::isDirectory(site_packages))
-    {
-        std::cout << "ISSofaPython: setting prefix: " << prefix << std::endl;
-        sys.attr("prefix") = prefix;
-        std::cout << "ISSofaPython: addsitedir: " << site_packages << std::endl;
-        pybind11::module::import("site").attr("addsitedir")(site_packages);
-    }
     std::vector<std::string> localPath;
 #ifdef _WIN32
     localPath.push_back(sofa::helper::system::SetDirectory::GetRelativeFromProcess("."));
@@ -75,7 +49,7 @@ PythonSceneLoader::PythonSceneLoader()
 #endif
     if (!localPath.empty())
     {
-        auto syspath = pybind11::module::import("sys").attr("path").cast<pybind11::list>();
+        auto syspath = sys.attr("path").cast<pybind11::list>();
         for (const std::string& s: localPath)
         {
             std::cout << "ISSofaPython: adding to python path: " << s << std::endl;
