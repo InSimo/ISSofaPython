@@ -9,7 +9,7 @@ if(NOT PYTHONINTERP_FOUND)
   return()
 endif()
 
-option(ISSOFAPYTHON_USE_VIRTUALENV "Use python virtualenv to install local python packages" OFF)
+option(ISSOFAPYTHON_USE_VIRTUALENV "Use python virtualenv to install local python packages" ON)
 set(ISSOFAPYTHON_VIRTUALENV_DIR "${CMAKE_BINARY_DIR}/python-venv" CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is ON: directory to use for python installation (defaults to <build-directory>/python-venv/)")
 set(ISSOFAPYTHON_VIRTUALENV_OPTIONS "--system-site-packages" CACHE STRING "If ISSOFAPYTHON_USE_VIRTUALENV is ON: options given to the virtualenv creation command")
 # Track a potential change of the virtualenv options, to re-execute the associated command in such case
