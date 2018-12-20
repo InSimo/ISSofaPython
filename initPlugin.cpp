@@ -43,23 +43,33 @@ void initExternalModule()
 #ifdef ISSOFAPYTHON_USE_VIRTUALENV
     // using static here because we need a static storage for the call to Py_SetPythonHome
     static std::string virtualenvDir;
-    if (sofa::helper::system::FileSystem::exists(ISSOFAPYTHON_VIRTUALENV_DIR) &&
-        sofa::helper::system::FileSystem::isDirectory(ISSOFAPYTHON_VIRTUALENV_DIR))
+
+    // In an installed/packaged context, we put the local python in a subdirectory of the binaries,
+    // so let's try this first
+    std::string potentialVenvDir = sofa::helper::system::SetDirectory::GetRelativeFromProcess(ISSOFAPYTHON_VIRTUALENV_DIRNAME);
+    if (sofa::helper::system::FileSystem::exists(potentialVenvDir.c_str()) &&
+        sofa::helper::system::FileSystem::isDirectory(potentialVenvDir.c_str()))
+    {
+        std::cout << "ISSofaPython: using local python in " << potentialVenvDir << std::endl;
+        virtualenvDir = potentialVenvDir;
+    }
+    // We may have more luck with the local python of the build tree, if still reachable
+    else if (sofa::helper::system::FileSystem::exists(ISSOFAPYTHON_VIRTUALENV_DIR) &&
+             sofa::helper::system::FileSystem::isDirectory(ISSOFAPYTHON_VIRTUALENV_DIR))
     {
         std::cout << "ISSofaPython: using ISSOFAPYTHON_VIRTUALENV_DIR " << ISSOFAPYTHON_VIRTUALENV_DIR << std::endl;
         virtualenvDir = ISSOFAPYTHON_VIRTUALENV_DIR;
     }
+    // The build tree is certainly not reachable anymore, or may have been moved so
+    // let's search relatively to the current process dir (this case is relevant if
+    // we execute the binaries of the build tree after having moved things)
     else
     {
         std::cout << "WARNING: ISSofaPython: unreachable virtual env dir " << ISSOFAPYTHON_VIRTUALENV_DIR << std::endl;
-        // The absolute path to the virtual env dir is not valid anymore, certainly because
-        // we are in an installed/packaged context, so let's check if a python
-        // virtual environment dir is present near the process binary.
-        const std::string virtualenvDirName = sofa::helper::system::SetDirectory::GetFileName(ISSOFAPYTHON_VIRTUALENV_DIR);
-        std::cout << "ISSofaPython: the virtual env dir name is " << virtualenvDirName << std::endl;
+        // Trying in the parent dir
         std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
         // Remove the trailing path separator, as we want the next call to GetFileName()
-        // to return the dir name (it would return an empty string otherwise)
+        // to return the dir name (otherwise it would return an empty string)
         if (prefix.back() == '/' || prefix.back() == '\\')
         {
             prefix.pop_back();
@@ -69,7 +79,7 @@ void initExternalModule()
         {
             prefix = sofa::helper::system::SetDirectory::GetParentDir(prefix.c_str());
         }
-        const std::string potentialVenvDir = prefix + '/' + virtualenvDirName;
+        potentialVenvDir = prefix + '/' + ISSOFAPYTHON_VIRTUALENV_DIRNAME;
         std::cout << "ISSofaPython: trying to find the the virtual env dir as " << potentialVenvDir << std::endl;
         if (sofa::helper::system::FileSystem::exists(potentialVenvDir) &&
             sofa::helper::system::FileSystem::isDirectory(potentialVenvDir))
