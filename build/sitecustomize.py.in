@@ -1,0 +1,35 @@
+"""
+sitecustomize.py is automatically imported by Python when the interpreter
+is initialized, allowing to adjust sys.path for our project.
+For a better chance to be used, the file can be placed next to the site.py
+file in the embedded python environment.
+"""
+import os
+import sys
+import site
+
+# Whether we use a standalone python distribution or a virtual env that is
+# linked to another python install
+IS_STANDALONE_PYTHON = '${EMBEDDED_PYTHON}' == 'TRUE'
+
+if IS_STANDALONE_PYTHON and site.ENABLE_USER_SITE:
+    # let's remove the user site-packages dir from sys.path, to be properly
+    # isolated from packages potentially already installed on the system.
+    # This has the same effect as running python with the -s option.
+    try:
+        sys.path.remove(site.USER_SITE)
+    except ValueError:
+        pass
+
+if sys.platform.startswith('linux'):
+    # On Linux we install binaries and libs in distinct folders, and
+    # the lib folder should be in the python path, especially to be able
+    # to import the ISSofaPython compiled module.
+    # If the python home is properly set before initializing the interpreter
+    # in the C++ code, sys.prefix should be the absolute root path of the
+    # python env of the project.
+    for reldir in ('..', '../..'):
+        lib_dir = os.path.join(sys.prefix, reldir, 'lib')
+        if os.path.exists(os.path.join(lib_dir, 'ISSofaPython.so')):
+            sys.path.insert(0, os.path.abspath(lib_dir))
+            break

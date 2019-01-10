@@ -123,6 +123,18 @@ if(ISSOFAPYTHON_USE_VIRTUALENV)
         )
     endif()
 
+    # Use a sitecustomize.py file to easily adjust the python sys.path for our project
+    set(SITECUSTOMIZE_FILE "${Base_SOURCE_DIR}/IS/ISSofaPython/build/sitecustomize.py.in")
+    if (WIN32)
+        set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_VIRTUALENV_DIR}/Lib")
+        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${DEFAULT_BIN_INSTALL}/${ISSOFAPYTHON_VIRTUALENV_DIRNAME}/Lib")
+    else()
+        set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_VIRTUALENV_DIR}/lib/python2.7")
+        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${DEFAULT_BIN_INSTALL}/${ISSOFAPYTHON_VIRTUALENV_DIRNAME}/lib/python2.7")
+    endif()
+    configure_file(${SITECUSTOMIZE_FILE} ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py)
+    install(FILES ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py DESTINATION ${SITECUSTOMIZE_INSTALL_DEST_DIR})
+
     target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_USE_VIRTUALENV=\"${ISSOFAPYTHON_USE_VIRTUALENV}\"")
     target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_VIRTUALENV_DIR=\"${ISSOFAPYTHON_VIRTUALENV_DIR}\"")
     target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_VIRTUALENV_DIRNAME=\"${ISSOFAPYTHON_VIRTUALENV_DIRNAME}\"")
