@@ -9,7 +9,11 @@
 #include <sofa/helper/system/SetDirectory.h>
 #include <sofa/helper/system/FileSystem.h>
 #include "PythonSceneLoader.h"
-#include <Python.h>
+
+// Not including <Python.h> here because the include of <pybind11/embed.h>
+// does it, and pybind also ensures there is no trouble when doing a debug build
+// (use of the release python lib instead of the debug one which is not
+// directly shipped with python)
 #include <pybind11/embed.h>
 
 namespace sofa
