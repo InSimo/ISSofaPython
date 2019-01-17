@@ -12,9 +12,9 @@ set(ISSOFAPYTHON_BUILD_BIN_DIR     ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(ISSOFAPYTHON_BUILD_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(ISSOFAPYTHON_BUILD_CMAKE_DIR   ${CMAKE_BINARY_DIR}/ISSofaPython)
 
-set(ISSOFAPYTHON_INSTALL_LIB_DIR     lib                      CACHE PATH "Installation directory for libraries relative to CMAKE_INSTALL_PREFIX variable")
-set(ISSOFAPYTHON_INSTALL_BIN_DIR     bin                      CACHE PATH "Installation directory for executables relative to CMAKE_INSTALL_PREFIX variable")
-set(ISSOFAPYTHON_INSTALL_INCLUDE_DIR include                  CACHE PATH "Installation directory for header files relative to CMAKE_INSTALL_PREFIX variable")
+set(ISSOFAPYTHON_INSTALL_LIB_DIR     ${CMAKE_INSTALL_LIBDIR}     CACHE PATH "Installation directory for libraries relative to CMAKE_INSTALL_PREFIX variable")
+set(ISSOFAPYTHON_INSTALL_BIN_DIR     ${CMAKE_INSTALL_BINDIR}     CACHE PATH "Installation directory for executables relative to CMAKE_INSTALL_PREFIX variable")
+set(ISSOFAPYTHON_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for header files relative to CMAKE_INSTALL_PREFIX variable")
 set(ISSOFAPYTHON_INSTALL_CMAKE_DIR   ${ISSOFAPYTHON_INSTALL_LIB_DIR}/cmake/ISSofaPython )
 
 option(ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY "Allow the generation of cached python bytecode ( .pyc files ) for release builds only" ON)
