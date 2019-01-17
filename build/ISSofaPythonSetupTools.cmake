@@ -20,14 +20,6 @@ if(NOT PYTHONINTERP_FOUND)
 endif()
 
 option(ISSOFAPYTHON_USE_VIRTUALENV "Use a local python environment (fully standalone when possible, else a virtualenv) for python packages instead of 'polluting' the system installation" ON)
-set(ISSOFAPYTHON_VIRTUALENV_DIR "${CMAKE_BINARY_DIR}/python-venv" CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is ON: directory to use for python installation (defaults to <build-directory>/python-venv/)")
-# Determine the name of the last folder in ISSOFAPYTHON_VIRTUALENV_DIR
-# (not using the simple get_filename_component function because if the input
-# path has a trailing slash, it returns an empty string)
-string(REGEX MATCH "([^/\\]+)[/\\]?$" _dummy "${ISSOFAPYTHON_VIRTUALENV_DIR}")
-set(ISSOFAPYTHON_VIRTUALENV_DIRNAME ${CMAKE_MATCH_1})
-set(ISSOFAPYTHON_VIRTUALENV_INSTALL_DIR "\${CMAKE_INSTALL_PREFIX}/${DEFAULT_BIN_INSTALL}/${ISSOFAPYTHON_VIRTUALENV_DIRNAME}")
-
 set(ISSOFAPYTHON_VIRTUALENV_OPTIONS "--system-site-packages" CACHE STRING "If ISSOFAPYTHON_USE_VIRTUALENV is ON: options given to the virtualenv creation command")
 # Track a potential change of the virtualenv options, to re-execute the associated command in such case
 if(NOT DEFINED ISSOFAPYTHON_VIRTUALENV_OPTIONS_old OR (ISSOFAPYTHON_VIRTUALENV_OPTIONS STREQUAL ISSOFAPYTHON_VIRTUALENV_OPTIONS_old))
@@ -43,6 +35,13 @@ set(ISSOFAPYTHON_INSTALL_PREFIX_DIR ${CMAKE_BINARY_DIR} CACHE PATH "If ISSOFAPYT
 set(ISSOFAPYTHON_PIP_INSTALL_OPTIONS "--editable" CACHE STRING "Options given to pip install commands")
 
 if(ISSOFAPYTHON_USE_VIRTUALENV)
+    # We set a cached var with a generic name for the python environment folder name,
+    # so that it can also be used in other generic modules
+    set(PYTHON_ENV_DIRNAME "python-venv" CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is ON: name of the folder containing the local python environment (fully standalone when possible, else a virtualenv)")
+
+    set(ISSOFAPYTHON_VIRTUALENV_DIR "${CMAKE_BINARY_DIR}/${PYTHON_ENV_DIRNAME}" CACHE INTERNAL "")
+    set(ISSOFAPYTHON_VIRTUALENV_INSTALL_DIR "\${CMAKE_INSTALL_PREFIX}/${DEFAULT_BIN_INSTALL}/${PYTHON_ENV_DIRNAME}" CACHE INTERNAL "")
+
     get_filename_component(PYTHON_EXECUTABLE_RELPATH ${PYTHON_EXECUTABLE} NAME)
     if(WIN32)
         # When using the embedded python, python.exe is directly at the root,
@@ -95,7 +94,7 @@ if(ISSOFAPYTHON_USE_VIRTUALENV)
         # Also install python in the install bin dir
         install(
             DIRECTORY "${EMBEDDED_PYTHON_DIR}/" # trailing slash to avoid having an extra folder level in the copy
-            DESTINATION "${DEFAULT_BIN_INSTALL}/${ISSOFAPYTHON_VIRTUALENV_DIRNAME}"
+            DESTINATION "${DEFAULT_BIN_INSTALL}/${PYTHON_ENV_DIRNAME}"
             PATTERN "*.pyc" EXCLUDE
             PATTERN "include" EXCLUDE
             PATTERN "libs" EXCLUDE
@@ -127,17 +126,16 @@ if(ISSOFAPYTHON_USE_VIRTUALENV)
     set(SITECUSTOMIZE_FILE "${Base_SOURCE_DIR}/IS/ISSofaPython/build/sitecustomize.py.in")
     if (WIN32)
         set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_VIRTUALENV_DIR}/Lib")
-        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${DEFAULT_BIN_INSTALL}/${ISSOFAPYTHON_VIRTUALENV_DIRNAME}/Lib")
+        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${DEFAULT_BIN_INSTALL}/${PYTHON_ENV_DIRNAME}/Lib")
     else()
         set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_VIRTUALENV_DIR}/lib/python2.7")
-        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${DEFAULT_BIN_INSTALL}/${ISSOFAPYTHON_VIRTUALENV_DIRNAME}/lib/python2.7")
+        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${DEFAULT_BIN_INSTALL}/${PYTHON_ENV_DIRNAME}/lib/python2.7")
     endif()
     configure_file(${SITECUSTOMIZE_FILE} ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py)
     install(FILES ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py DESTINATION ${SITECUSTOMIZE_INSTALL_DEST_DIR})
 
     target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_USE_VIRTUALENV=\"${ISSOFAPYTHON_USE_VIRTUALENV}\"")
-    target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_VIRTUALENV_DIR=\"${ISSOFAPYTHON_VIRTUALENV_DIR}\"")
-    target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_VIRTUALENV_DIRNAME=\"${ISSOFAPYTHON_VIRTUALENV_DIRNAME}\"")
+    target_compile_definitions(ISSofaPythonPlugin PRIVATE "PYTHON_ENV_DIRNAME=\"${PYTHON_ENV_DIRNAME}\"")
 
 elseif(ISSOFAPYTHON_INSTALL_USER)
     set(ISSOFAPYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Local python executable (within virtualenv if enabled)" FORCE)
