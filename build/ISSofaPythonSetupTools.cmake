@@ -35,6 +35,19 @@ set(ISSOFAPYTHON_INSTALL_PREFIX_DIR ${CMAKE_BINARY_DIR} CACHE PATH "If ISSOFAPYT
 set(ISSOFAPYTHON_PIP_INSTALL_OPTIONS "--editable" CACHE STRING "Options given to pip install commands")
 
 if(ISSOFAPYTHON_USE_VIRTUALENV)
+    if(EMBEDDED_PYTHON AND (DEFINED ENV{PYTHONHOME} OR DEFINED ENV{PYTHONPATH}))
+        # When embedding a full python distribution, if a PYTHONHOME and/or PYTHONPATH env var
+        # is defined, the packages we need may not always be installed at the correct place,
+        # or pip could detect that some of them are already installed and not install them in our
+        # local environment
+        if(DEFINED ENV{PYTHONHOME})
+            message(FATAL_ERROR "A PYTHONHOME env var was detected (with value '$ENV{PYTHONHOME}'). Please remove any PYTHONHOME or PYTHONPATH env var first !")
+        endif()
+        if(DEFINED ENV{PYTHONPATH})
+            message(FATAL_ERROR "A PYTHONPATH env var was detected (with value '$ENV{PYTHONPATH}'). Please remove any PYTHONHOME or PYTHONPATH env var first !")
+        endif()
+    endif()
+
     # We set a cached var with a generic name for the python environment folder name,
     # so that it can also be used in other generic modules
     set(PYTHON_ENV_DIRNAME "python-venv" CACHE PATH "If ISSOFAPYTHON_USE_VIRTUALENV is ON: name of the folder containing the local python environment (fully standalone when possible, else a virtualenv)")
