@@ -191,19 +191,43 @@ function(issofapython_add_package)
         else()
             set(PYTHON_SITE_PACKAGES_RELPATH "lib/python2.7/site-packages")
         endif()
-        # Using the -t option of pip, explicitely specifying the site-packages dir
-        # where to install, otherwise if a package is already installed on the system
-        # it does not install it in our local site-packages
-        # (I didn't find a suitable option for that)
+        # - Using the -t option of pip, explicitely specifying the site-packages dir
+        #   where to install, otherwise if a package is already installed on the system
+        #   it does not install it in our local site-packages
+        #   (I didn't find a suitable option for that)
+        # - Two commands are executed:
+        #   "pip install --upgrade --no-deps" and then "pip install"
+        #   -> this is to force the upgrade of the main installed package, while only
+        #   installing the dependencies if missing (but not forcing their upgrade).
+        #   The --upgrade --upgrade-strategy=only-if-needed option combo was tried, but
+        #   the dependencies were reinstalled, at least when we don't specify versions.
+        #   (another solution could be to remove the site-packages/<main-package-name>
+        #   folder before doing a single "pip install")
+        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_VIRTUALENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -m pip install")
+        set(PIP_INSTALL_DIR "${ISSOFAPYTHON_VIRTUALENV_INSTALL_DIR}/${PYTHON_SITE_PACKAGES_RELPATH}")
         install(CODE "
-            message(STATUS \"Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip\")
+            message(STATUS \"Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip [step 1: force upgrade, without dependencies]\")
             set(ENV{PYTHONDONTWRITEBYTECODE} 1)
             execute_process(
                 COMMAND
-                ${ISSOFAPYTHON_VIRTUALENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -m pip install \"./\"
-                -t ${ISSOFAPYTHON_VIRTUALENV_INSTALL_DIR}/${PYTHON_SITE_PACKAGES_RELPATH}/
+                ${PIP_INSTALL_CMD} \"./\" -t ${PIP_INSTALL_DIR} --upgrade --no-deps --disable-pip-version-check
                 WORKING_DIRECTORY ${PROJECT_PYTHON_SETUPTOOLS_DIR}
-            )"
+                RESULT_VARIABLE PIP_INSTALL_RC
+            )
+            if(PIP_INSTALL_RC)
+                message(FATAL_ERROR \"pip install failed\")
+            endif()
+            message(STATUS \"Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip [step 2: install dependencies]\")
+            execute_process(
+                COMMAND
+                ${PIP_INSTALL_CMD} \"./\" -t ${PIP_INSTALL_DIR} --disable-pip-version-check
+                WORKING_DIRECTORY ${PROJECT_PYTHON_SETUPTOOLS_DIR}
+                RESULT_VARIABLE PIP_INSTALL_RC
+            )
+            if(PIP_INSTALL_RC)
+                message(FATAL_ERROR \"pip install failed\")
+            endif()
+            "
         )
     endif()
 endfunction()
