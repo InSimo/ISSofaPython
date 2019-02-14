@@ -152,9 +152,20 @@ bool setFinalValueFromPyArithmetic(void* dataPtr, PyArithmeticType pyArithmetic,
 bool setFinalValueFromString(void* dataPtr, const std::string& str, const AbstractMultiValueTypeInfo* typeInfo, std::size_t index = 0)
 {
     bool ok = true;
-    if (typeInfo && typeInfo->String())
+    if (typeInfo )
     {
-        typeInfo->setFinalValueString(dataPtr, index, str);
+        if (typeInfo->String())
+        {
+            typeInfo->setFinalValueString(dataPtr, index, str);
+        }
+        else
+        {
+            // The underlying type is not a string, we try to de-serialize using 
+            // istream operator. 
+            // If the istream operator is not properly implemented for the underlying type 
+            // this can fail silently or give a wrong initialization of the type.
+            typeInfo->setDataValueString(dataPtr, str);
+        }
     }
     else
     {
