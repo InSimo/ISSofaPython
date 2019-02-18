@@ -131,6 +131,10 @@ set_property(TARGET SofaHelper APPEND PROPERTY SOFA_PRELOAD "ISSofaPythonPlugin"
 #endif()
 #set(SOFA_PRELOAD_ENV "" CACHE STRING "A list (semicolon separated) of preloaded sofa plugins to write in sofa.env file.")
 
+include(ISSofaPythonSetupTools.cmake)
+set(ISSOFAPYTHON_SETUP_PY ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/setup.py)
+issofapython_add_package(${ISSOFAPYTHON_SETUP_PY})
+
 include(CMakePackageConfigHelpers)
 
 # ISSofaPythonConfigVersion.cmake file (same for build tree and intall)

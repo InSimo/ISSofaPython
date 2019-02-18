@@ -5,6 +5,7 @@
 *******************************************************************************/
 
 #include "PluginManagerBinding.h"
+#include <sofa/helper/system/FileRepository.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <pybind11/iostream.h>
 
@@ -47,6 +48,11 @@ void pluginManagerLoadPlugin(const std::string& path, bool finalPath = false)
     loadPlugin(&PluginManager::getInstance(), path, finalPath);    
 }
 
+void pluginManagerAddDataPath(const std::string& path)
+{
+    sofa::helper::system::DataRepository.addFirstPath(path);
+}
+
 void initBindingPluginManager(pybind11::module& m)
 {
     pybind11::class_<PluginManager, std::unique_ptr<PluginManager, pybind11::nodelete> >(m, "PluginManager")
@@ -59,6 +65,7 @@ void initBindingPluginManager(pybind11::module& m)
         ;
 
     m.def("loadPlugin", &pluginManagerLoadPlugin, pybind11::arg("path"), pybind11::arg("finalPath") = false);
+    m.def("addDataPath", &pluginManagerAddDataPath, pybind11::arg("path"));
 
 }
 
