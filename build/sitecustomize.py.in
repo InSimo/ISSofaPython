@@ -4,9 +4,16 @@ is initialized, allowing to adjust sys.path for our project.
 For a better chance to be used, the file can be placed next to the site.py
 file in the embedded python environment.
 
-/!\ Be careful not doing too much prints in this file, as it can lead to
+We could disable the 'import site' feature from the C/C++ code, or
+only disable the usage of the user site dir, but anyway we also have the
+case of the python interpreter directly run without any wrapper or option:
+let's be robust and always give a priority to the local modules/packages.
+
+/!\ Be careful not doing any print in this file, as it can lead to
     an IOError(9, 'Bad file descriptor') exception when the interpreter
     is initialized from C/C++ code, making the module import fail.
+    It also interfers with processes using the output of well known
+    commands like "python -m site --user-site".
 """
 import os
 import sys
@@ -19,8 +26,9 @@ IS_WIN = sys.platform.startswith('win')
 IS_STANDALONE_PYTHON = '${EMBEDDED_PYTHON}' == 'TRUE'
 
 if IS_STANDALONE_PYTHON and site.ENABLE_USER_SITE:
-    # let's remove the user site-packages dir from sys.path, to try to be
-    # isolated from packages potentially already installed on the system.
+    # When not in a virtualenv, let's remove the user site-packages dir
+    # from sys.path, to try to be isolated from packages potentially already
+    # installed on the system.
     # This has the same effect as running python with the -s option.
     # ... except if .pth files exist in the user site dir: in this case the
     # paths listed in these files are added in sys.path (one way to discard
@@ -63,8 +71,6 @@ if not IS_WIN:
     # If the python home is properly set before initializing the interpreter
     # in the C++ code, sys.prefix should be the absolute root path of the
     # python env of the project.
-    for reldir in ('..', '../..'):
-        lib_dir = os.path.join(sys.prefix, reldir, 'lib')
-        if os.path.exists(os.path.join(lib_dir, 'ISSofaPython.so')):
-            sys.path.insert(0, os.path.abspath(lib_dir))
-            break
+    lib_dir = os.path.join(sys.prefix, 'lib')
+    if os.path.exists(os.path.join(lib_dir, 'ISSofaPython.so')):
+        sys.path.insert(0, os.path.abspath(lib_dir))

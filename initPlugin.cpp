@@ -6,6 +6,7 @@
 
 #include "initPlugin.h"
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/helper/system/config.h> // sofa_tostring
 #include <sofa/helper/system/SetDirectory.h>
 #include <sofa/helper/system/FileSystem.h>
 #include "PythonSceneLoader.h"
@@ -35,63 +36,90 @@ extern "C" {
     ISSOFAPYTHONPLUGIN_API const char* getModuleComponentList();
 }
 
+// Test the existence of a Python .py module file given its path.
+// The input string should end with ".py", and the existence of the
+// byte-compiled .pyc/.pyo versions are checked if the .py is not found.
+static bool doesPythonModuleExist(const std::string& modulePath) {
+    return (sofa::helper::system::FileSystem::exists(modulePath)
+            || sofa::helper::system::FileSystem::exists(modulePath + 'c')
+            || sofa::helper::system::FileSystem::exists(modulePath + 'o'));
+}
+
 void initExternalModule()
 {
     if (Py_IsInitialized())
     {
-        // The Python interpreter is certainly already initialized by H3D
+        std::cout << "ISSofaPython: the Python interpreter is already initialized" << std::endl;
         return;
     }
 
-    // Let's initialize the Python interpreter, possibly using the local virtual env
-#ifdef ISSOFAPYTHON_USE_VIRTUALENV
+    // Let's initialize the Python interpreter, possibly using the local env
+    // (full python ditribution, or virtualenv) by setting the appropriate Python home dir.
+
+#ifdef ISSOFAPYTHON_USE_LOCAL_ENV
+    // On Windows, as soon as the Python env resides next to the process executable
+    // (in the same dir or one level above), we could do nothing and the local env
+    // would be used, but this is not the case on Linux. In all cases we force the
+    // Python home here, as it also allows to be sure the local env is used even
+    // when a PYTHONHOME env var is set on the system.
+
+    // We could set some flags here, such as Py_IgnoreEnvironmentFlag and Py_NoUserSiteDirectory.
+    // But for the moment we choose to be versatile and as much as possible have the
+    // same behavior as the non wrapped python interpreter executable, especially
+    // allowing to use env vars that can be useful for debugging purposes, or supporting
+    // a virtualenv installed with the --system-site-packages option and relying on packages
+    // installed in the user site dir.
+    // We may set these flags in the future for production builds when embedding a standalone
+    // python distribution, but our local sitecustomize.py module currently does the necessary
+    // to ensure the local modules/packages are always prioritary versus other ones
+    // potentially existing outside the local env.
+
     // using static here because we need a static storage for the call to Py_SetPythonHome
-    static std::string virtualenvDir;
+    static std::string pythonHome;
 
-    // In an installed/packaged context, we put the local python in a subdirectory of the binaries,
-    // so let's try this first
-    std::string potentialVenvDir = sofa::helper::system::SetDirectory::GetRelativeFromProcess(PYTHON_ENV_DIRNAME);
-    if (sofa::helper::system::FileSystem::exists(potentialVenvDir.c_str()) &&
-        sofa::helper::system::FileSystem::isDirectory(potentialVenvDir.c_str()))
+    std::string processeExeDir = sofa::helper::system::SetDirectory::GetRelativeFromProcess(".");
+    // GetRelativeFromProcess(".") returns something like "<process dir>/.", let's clean this
+    if (processeExeDir.back() == '.')
     {
-        std::cout << "ISSofaPython: using local python env in " << potentialVenvDir << std::endl;
-        virtualenvDir = potentialVenvDir;
+        processeExeDir.pop_back();
+        processeExeDir.pop_back();
+    }
+
+    // To properly detect where the Python home should be set, we use the os.py[c|o]
+    // landmark module (this is common to use this module, and also done in the
+    // Python source code itself).
+    // If not found, we also try to find a "pythonXY.zip" file, as it can contain the
+    // python libs, and is also used as a landmark since Python 3.
+#ifdef WIN32
+    #define PYLIB_LANDMARK_OS_PY "Lib/os.py"
+    #define PYLIB_LANDMARK_ZIP "python" sofa_tostring(PY_MAJOR_VERSION) sofa_tostring(PY_MINOR_VERSION) ".zip"
+#else
+    #define PYLIB_LANDMARK_OS_PY "lib/python" sofa_tostring(PY_MAJOR_VERSION) "." sofa_tostring(PY_MINOR_VERSION) "/os.py"
+    #define PYLIB_LANDMARK_ZIP "lib/python" sofa_tostring(PY_MAJOR_VERSION) sofa_tostring(PY_MINOR_VERSION) ".zip"
+#endif
+
+    if (doesPythonModuleExist(processeExeDir + "/" PYLIB_LANDMARK_OS_PY)
+        || sofa::helper::system::FileSystem::exists(processeExeDir + "/" PYLIB_LANDMARK_ZIP))
+    {
+        pythonHome = processeExeDir;
+    }
+    else if (doesPythonModuleExist(processeExeDir + "/../" PYLIB_LANDMARK_OS_PY)
+        || sofa::helper::system::FileSystem::exists(processeExeDir + "/../" PYLIB_LANDMARK_ZIP))
+    {
+        pythonHome = processeExeDir + "/..";
+    }
+
+    if (!pythonHome.empty())
+    {
+        std::cout << "ISSofaPython: setting the Python home to " << pythonHome << std::endl;
+        Py_SetPythonHome(const_cast<char*>(pythonHome.c_str()));
     }
     else
     {
-        // We are certainly running the software from the build tree, and in this case the
-        // python env is in a parent dir
-        std::string prefix = sofa::helper::system::SetDirectory::GetRelativeFromProcess("../");
-        // Remove the trailing path separator, as we want the next call to GetFileName()
-        // to return the dir name (otherwise it would return an empty string)
-        if (prefix.back() == '/' || prefix.back() == '\\')
-        {
-            prefix.pop_back();
-        }
-        // Handle case where executables are in <builddir>/bin/<config>
-        if (sofa::helper::system::SetDirectory::GetFileName(prefix.c_str()) == "bin")
-        {
-            prefix = sofa::helper::system::SetDirectory::GetParentDir(prefix.c_str());
-        }
-        potentialVenvDir = prefix + '/' + PYTHON_ENV_DIRNAME;
-        std::cout << "ISSofaPython: trying to find the local python env in " << potentialVenvDir << std::endl;
-        if (sofa::helper::system::FileSystem::exists(potentialVenvDir) &&
-            sofa::helper::system::FileSystem::isDirectory(potentialVenvDir))
-        {
-            virtualenvDir = potentialVenvDir;
-        }
+        std::cerr << "ERROR: ISSofaPython: could not find the local Python home" << std::endl;
     }
+#endif // ISSOFAPYTHON_USE_LOCAL_ENV
 
-    if (!virtualenvDir.empty())
-    {
-        std::cout << "ISSofaPython: setting the Python home to " << virtualenvDir << std::endl;
-        Py_SetPythonHome(const_cast<char*>(virtualenvDir.c_str()));
-    }
-    else
-    {
-        std::cerr << "ERROR: ISSofaPython: could not find the local python env" << std::endl;
-    }
-#endif // ISSOFAPYTHON_USE_VIRTUALENV
     std::cout << "ISSofaPython: initializing the Python interpreter" << std::endl;
     pybind11::initialize_interpreter();
 }
