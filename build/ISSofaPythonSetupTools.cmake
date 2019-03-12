@@ -109,7 +109,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
     endif()
 
     # Use a sitecustomize.py file to easily adjust the python sys.path for our project
-    set(SITECUSTOMIZE_FILE "${Base_SOURCE_DIR}/IS/ISSofaPython/build/sitecustomize.py.in")
+    set(SITECUSTOMIZE_FILE "${ISSofaPython_SOURCE_DIR}/sitecustomize.py.in")
     if (WIN32)
         set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_LOCAL_ENV_DIR}/Lib")
         set(SITECUSTOMIZE_INSTALL_DEST_DIR "${CMAKE_INSTALL_BINDIR}/Lib")
