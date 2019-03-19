@@ -52,7 +52,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
         if (WIN32)
             # On windows we put everything in the binaries folder
             set(ISSOFAPYTHON_LOCAL_ENV_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" CACHE INTERNAL "")
-            set(ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR "\${CMAKE_INSTALL_PREFIX}/{CMAKE_INSTALL_BINDIR}" CACHE INTERNAL "")
+            set(ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR "\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" CACHE INTERNAL "")
         else()
             # On Linux things are split between bin and lib
             set(ISSOFAPYTHON_LOCAL_ENV_DIR ${CMAKE_BINARY_DIR} CACHE INTERNAL "")
