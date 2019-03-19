@@ -105,7 +105,7 @@ target_compile_definitions(ISSofaPythonPlugin PRIVATE "SOFA_BUILD_ISSOFAPYTHONPL
 
 # On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
 # This code find its SONAME using readelf
-message("Getting python library SONAME")
+message(STATUS "Getting python library SONAME")
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
     if (PYTHON_LIBRARIES)
         execute_process(COMMAND bash -c "readelf -d ${PYTHON_LIBRARIES} | awk '$2==\"(SONAME)\" { print substr(\$5,2,length(\$5)-2) }'"
@@ -113,10 +113,10 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
             OUTPUT_VARIABLE PYTHON_LIBRARY_SONAME
             OUTPUT_STRIP_TRAILING_WHITESPACE)
         if (SONAME_ERRORCODE)
-            message("Failed to get python library SONAME")
+            message(WARNING "Failed to get python library SONAME")
         else()
             target_compile_definitions(ISSofaPythonPlugin PRIVATE "PYTHON_LIBRARY_SONAME=\"${PYTHON_LIBRARY_SONAME}\"")
-            message("python library SONAME: ${PYTHON_LIBRARY_SONAME}")
+            message(STATUS "python library SONAME: ${PYTHON_LIBRARY_SONAME}")
         endif()
     endif()
 endif()
