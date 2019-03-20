@@ -220,6 +220,9 @@ void initBindingBaseContext(pybind11::module& m)
                                         pybind11::arg("templateName") = std::string())
         .def("searchAllRoot", &searchAllRoot, pybind11::arg("className") = std::string(),
                                               pybind11::arg("templateName") = std::string())
+        // alias of searchAllLocal
+        .def("getObjects",&searchAllLocal, pybind11::arg("className") = std::string(),
+                                               pybind11::arg("templateName") = std::string())
         .def("getDt",&BaseContext::getDt )
         .def("getTime",&BaseContext::getTime )
         ;
