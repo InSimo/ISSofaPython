@@ -17,7 +17,10 @@ namespace python
 using sofa::core::objectmodel::BaseNode;
 using sofa::core::objectmodel::Base;
 
-
+std::string getPath(const BaseNode* node)
+{
+    return "@"+node->getPathName();
+}
 
 namespace internal
 {
@@ -52,6 +55,7 @@ void initBindingBaseNode(pybind11::module& m)
         .def("removeObject", &BaseNode::removeObject)
         .def("addChild", &BaseNode::addChild)
         .def("removeChild", &BaseNode::removeChild)
+        .def("getPath", &getPath)
         ;
     
     m.def("getNode", &internal::getNode);
