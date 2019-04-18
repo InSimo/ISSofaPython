@@ -67,12 +67,15 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
         if(NOT EMBEDDED_PYTHON)
             set(PYTHON_EXECUTABLE_RELPATH "Scripts/${PYTHON_EXECUTABLE_RELPATH}")
         endif()
+        set(PYTHON_SITE_PACKAGES_RELPATH "Lib/site-packages")
     else()
         # No embedded python on Linux for the moment (-> only a pure virtualenv)
         set(PYTHON_EXECUTABLE_RELPATH "bin/${PYTHON_EXECUTABLE_RELPATH}")
+        set(PYTHON_SITE_PACKAGES_RELPATH "lib/python2.7/site-packages")
     endif()
     set(ISSOFAPYTHON_EXECUTABLE_RELPATH ${PYTHON_EXECUTABLE_RELPATH} CACHE INTERNAL "" FORCE)
     set(ISSOFAPYTHON_EXECUTABLE "${ISSOFAPYTHON_LOCAL_ENV_DIR}/${PYTHON_EXECUTABLE_RELPATH}" CACHE FILEPATH "Local python executable" FORCE)
+    set(ISSOFAPYTHON_SITE_PACKAGES_RELPATH "${PYTHON_SITE_PACKAGES_RELPATH}" CACHE INTERNAL "" FORCE)
     set(ISSOFAPYTHON_PIP_INSTALL_OPTIONS_ALL "${ISSOFAPYTHON_PIP_INSTALL_OPTIONS}" CACHE STRING "" FORCE)
 
     # Put the local python in the build tree (only if not existing yet to keep short
@@ -99,12 +102,21 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
         # and is not guaranteed to work in all circumstances. It is possible that the option will
         # be deprecated in a future version of virtualenv.
         install(CODE "
-            message(STATUS \"Creating the python virtualenv in ${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\")
-            set(ENV{PYTHONDONTWRITEBYTECODE} 1)
-            execute_process(
-                COMMAND
-                ${PYTHON_EXECUTABLE} -m virtualenv ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} \"${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\"
-            )"
+            if (EXISTS ${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH})
+                message(STATUS \"The python virtualenv already exists in ${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\")
+            else()
+                message(STATUS \"Creating the python virtualenv in ${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\")
+                set(ENV{PYTHONDONTWRITEBYTECODE} 1)
+                execute_process(
+                    COMMAND
+                    ${PYTHON_EXECUTABLE} -m virtualenv ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} \"${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\"
+                    RESULT_VARIABLE VIRTUALENV_CREATION_RC
+                )
+                if (VIRTUALENV_CREATION_RC)
+                    message(FATAL_ERROR \"The python virtualenv creation failed\")
+                endif()
+            endif()
+            "
         )
     endif()
 
@@ -147,7 +159,7 @@ endif()
 #
 function(issofapython_add_package)
     cmake_parse_arguments(ARG "" "" "" ${ARGN})
-    
+
     set(PROJECT_PYTHON_SETUPTOOLSFILE ${ARG_UNPARSED_ARGUMENTS})
     if(NOT EXISTS ${PROJECT_PYTHON_SETUPTOOLSFILE} )
         message(FATAL_ERROR "No python package setup file provided.")
@@ -156,19 +168,19 @@ function(issofapython_add_package)
 
     message(STATUS "Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip")
     execute_process(
-        COMMAND ${ISSOFAPYTHON_EXECUTABLE} -m pip install ${ISSOFAPYTHON_PIP_INSTALL_OPTIONS_ALL} "./"
+        COMMAND
+        ${ISSOFAPYTHON_EXECUTABLE} -m pip install ${ISSOFAPYTHON_PIP_INSTALL_OPTIONS_ALL} "./"
         WORKING_DIRECTORY ${PROJECT_PYTHON_SETUPTOOLS_DIR}
+        RESULT_VARIABLE PIP_INSTALL_RC
     )
+    if(PIP_INSTALL_RC)
+        message(FATAL_ERROR "pip install failed with code ${PIP_INSTALL_RC}")
+    endif()
 
     # Add a command for the install target. We don't install the packages
     # in editable mode (as this is more a convenience for dev/debug) that is
     # why we don't pass the ISSOFAPYTHON_PIP_INSTALL_OPTIONS here
     if (ISSOFAPYTHON_USE_LOCAL_ENV)
-        if(WIN32)
-            set(PYTHON_SITE_PACKAGES_RELPATH "Lib/site-packages")
-        else()
-            set(PYTHON_SITE_PACKAGES_RELPATH "lib/python2.7/site-packages")
-        endif()
         # - Using the -t option of pip, explicitely specifying the site-packages dir
         #   where to install, otherwise if a package is already installed on the system
         #   it does not install it in our local site-packages
@@ -181,11 +193,11 @@ function(issofapython_add_package)
         #   the dependencies were reinstalled, at least when we don't specify versions.
         #   (another solution could be to remove the site-packages/<main-package-name>
         #   folder before doing a single "pip install")
-        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -m pip install")
-        set(PIP_INSTALL_DIR "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${PYTHON_SITE_PACKAGES_RELPATH}")
+        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -s -m pip install")
+        set(PIP_INSTALL_DIR "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_SITE_PACKAGES_RELPATH}")
         install(CODE "
             message(STATUS \"Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip [step 1: force upgrade, without dependencies]\")
-            set(ENV{PYTHONDONTWRITEBYTECODE} 1)
+            set(ENV{PYTHONDONTWRITEBYTECODE} 1) # seems to have more effect than python -B option
             execute_process(
                 COMMAND
                 ${PIP_INSTALL_CMD} \"./\" -t ${PIP_INSTALL_DIR} --upgrade --no-deps --disable-pip-version-check
@@ -200,6 +212,40 @@ function(issofapython_add_package)
                 COMMAND
                 ${PIP_INSTALL_CMD} \"./\" -t ${PIP_INSTALL_DIR} --disable-pip-version-check
                 WORKING_DIRECTORY ${PROJECT_PYTHON_SETUPTOOLS_DIR}
+                RESULT_VARIABLE PIP_INSTALL_RC
+            )
+            if(PIP_INSTALL_RC)
+                message(FATAL_ERROR \"pip install failed\")
+            endif()
+            "
+        )
+    endif()
+endfunction()
+
+# Install 3rd party python dependencies listed in a requirements file.
+function(issofapython_install_requirements requirements_file_path)
+    message(STATUS "Installing ${requirements_file_path} with pip")
+    execute_process(
+        COMMAND
+        ${ISSOFAPYTHON_EXECUTABLE} -m pip install -r ${requirements_file_path}
+        RESULT_VARIABLE PIP_INSTALL_RC
+    )
+    if(PIP_INSTALL_RC)
+        message(FATAL_ERROR "pip install failed with code ${PIP_INSTALL_RC}")
+    endif()
+
+    # Add a command for the install target.
+    # Using the python -s option to force installing packages in the local site-packages
+    # dir of the project instead of potentially using the user site dir.
+    if (ISSOFAPYTHON_USE_LOCAL_ENV)
+        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -s -m pip install")
+        set(PIP_INSTALL_DIR "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_SITE_PACKAGES_RELPATH}")
+        install(CODE "
+            message(STATUS \"Installing ${requirements_file_path} with pip\")
+            set(ENV{PYTHONDONTWRITEBYTECODE} 1) # seems to have more effect than python -B option
+            execute_process(
+                COMMAND
+                ${PIP_INSTALL_CMD} -r ${requirements_file_path} -t ${PIP_INSTALL_DIR} --disable-pip-version-check
                 RESULT_VARIABLE PIP_INSTALL_RC
             )
             if(PIP_INSTALL_RC)
