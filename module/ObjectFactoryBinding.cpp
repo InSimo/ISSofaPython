@@ -76,7 +76,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
 
     if (obj == nullptr)
     {
-        throw std::invalid_argument("createObject failed with: " + objDescription.getName());
+        throw std::invalid_argument("createObject failed with: " + std::string(pybind11::str(args))  + " " + std::string(pybind11::str(kwargs)) );
     }
 
     pybind11::dict dict(kwargs);
