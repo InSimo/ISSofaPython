@@ -80,6 +80,7 @@ void initBindingGNode(pybind11::module& m)
            
     gNode.def(pybind11::init<>())
          .def("createObject", &internal::createObject)
+         .def("removeObject", &GNode::removeObject)
          .def("addChild", [](GNode* instance, GNode::SPtr child) { instance->addChild(child); } )
          .def("removeChild", [](GNode* instance, GNode::SPtr child) { instance->removeChild(child); } )
          .def("createChild", &internal::createChild)
