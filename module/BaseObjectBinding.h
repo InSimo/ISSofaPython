@@ -46,11 +46,6 @@ public:
         PYBIND11_OVERLOAD(void, TSofaObject, reinit, );
     }
 
-    void handleEvent(sofa::core::objectmodel::Event* e) override
-    {
-        PYBIND11_OVERLOAD(void, TSofaObject, handleEvent, e);
-    }
-
     void cleanup() override
     {
         PYBIND11_OVERLOAD(void, TSofaObject, cleanup, );
