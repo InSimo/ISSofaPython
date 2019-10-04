@@ -4,17 +4,27 @@ import inspect
 class MyEvent(Sofa.PythonEvent):
     def __init__(self):
         Sofa.PythonEvent.__init__(self)
+        self.foo = "bar"
+    
+    def get_message(self):
+        return self.foo
     
 class MyOtherEvent(Sofa.PythonEvent):
     def __init__(self):
         Sofa.PythonEvent.__init__(self)
+        self.bar = "foo"
+    
+    def get_message(self):
+        return self.bar
 
 class MyController(Sofa.PythonController):
     def __init__(self):
         super(MyController,self).__init__()
-    
+        self.foobar = "foobar"
+
     def callback(self, e ):
         print self.getClass().className + "::handleEvent("+ e.getClass().fullTypeName + " " + e.getClassName() +")"
+        print self.foobar + " received " + e.get_message()
 
 root = Sofa.createRootNode("root")
 controller = MyController()

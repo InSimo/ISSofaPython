@@ -57,33 +57,40 @@ def createScene(root):
     return root
 ```
 
+== Data and Links as as special attributes of python wrapped Sofa objects
+
+For python objects which wraps a Sofa object ( ie any object which derive from `sofa::core::objectmodel::Base` ) the list of `Data` and `Link` 
+are bound as special attributes on top of the python `__dict__` using their name property.
+Note that these special attributes **do not belong** to the `__dict__` of the python object instance
+
+For example the following syntax works:
+
+```lang=python
+obj.printLog.value = True 
+# equivalent syntax 
+obj.findData("printLog").value = True
+```
+
+Also some automatic casting is performed when setting the `Data` or `Link` of a python wrapped Sofa object
+Example for `Data` attribute casting:
+```lang=python
+mstate1 = node.createObject("MechanicalObject",template="Vec3d", name="mstate1", position=[(1,0,0),(0,1,0),(0,0,1)])
+mstate2 = node.createObject("MechanicalObject",template="Vec3d", name="mstate2", position=mstate1.position.getPath() ) # mstate1.position becomes the parent Data of mstate2.position
+mstate3 = node.createObject("MechanicalObject",template="Vec3d", name="mstate3", position=mstate2.position.value ) # mstate3.position is a deep copy of mstate2.position
+```
+
+Example for `Link` attribute casting:
+```lang=python
+mstate1 = parent.createObject("MechanicalObject",template="Vec3d", name="mstate1")
+mstate2 = child.createObject("MechanicalObject",template="Vec3d", name="mstate2")
+mapping = child.createObject("BarycentricMapping", input=mstate1.getPath(),output=mstate2.getPath())
+```
+
 == Main differences compared to SofaPython 
 
 From a user perspective several aspects differ from SofaPython
 
-=== Data as a dynamic attributes of a component
-
-Contrary to SofaPython, object `Data` are bound as dynamic attributes only when created from the `ObjectFactory`.
-
-This works:
-```lang=python
-import ISSofaPython as Sofa
-
-Sofa.loadPlugin("myPlugin")
-node = Sofa.createRootNode("root")
-obj  = node.createObject("MyObject", name="myObject")
-print obj.name.value # output "myObject"
-```
-
-Assuming a binding for `MyObject` type has been implemented in the `ISSofaPython` module, the following does not work:
-```lang=python
-import ISSofaPython as Sofa
-
-obj  = Sofa.MyObject()
-print obj.name.value # throws Attribute Error python exception: object has no attribute 'name'
-```
-
-=== Accessing Data value
+=== Accessing Data value from a python wrapped Sofa object
 
 In SofaPython accessing the value stored in a `Data` result in typing something like
 ```lang=python 

@@ -30,7 +30,7 @@ pybind11::object getNode(std::string path)
     // sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
     if(node)
     {
-        return bindDataAndLinks(node);
+        return pybind11::cast(node);
     }
     else
     {

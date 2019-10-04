@@ -14,6 +14,8 @@
 #include <sofa/core/objectmodel/BaseNode.h>
 #include <sofa/simulation/tree/GNode.h>
 
+
+
 namespace sofa
 {
 
@@ -31,14 +33,9 @@ namespace sofa
 namespace python
 {
 
+
 void initBindingBase(pybind11::module& m);
 
-pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseObject> obj);
-
-pybind11::object bindDataAndLinks(sofa::sptr<core::objectmodel::BaseNode> obj);
-
-void genericBindDataAndLinks(pybind11::object& pyObj, const helper::vector<core::objectmodel::BaseData*> dataVec,
-    const helper::vector<BaseLink*> linkVec, const std::string& objName);
 
 template< class TSofaBase >
 class PySofaBase : public TSofaBase

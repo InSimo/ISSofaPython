@@ -19,15 +19,7 @@ using sofa::core::objectmodel::BaseNode;
 namespace internal
 {
 
-std::string getPath(const BaseObject* obj)
-{
-    std::string path;
-    if (const BaseNode* node = BaseNode::DynamicCast(obj->getContext()))
-    {
-        path += "@"+node->getPathName() + "/" + obj->getName();;
-    }
-    return path;
-}
+
 
 pybind11::object getObject(std::string path)
 {
@@ -37,7 +29,7 @@ pybind11::object getObject(std::string path)
     // sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
     if(obj)
     {
-        return bindDataAndLinks(obj);
+        return pybind11::cast(obj);
     }
     else
     {
@@ -58,11 +50,21 @@ pybind11::object getSlaves(sofa::sptr<BaseObject> obj)
 
 }
 
+std::string getPath(const BaseObject* obj)
+{
+    std::string path;
+    if (const BaseNode* node = BaseNode::DynamicCast(obj->getContext()))
+    {
+        path += "@" + node->getPathName() + "/" + obj->getName();;
+    }
+    return path;
+}
+
 void initBindingBaseObject(pybind11::module& m)
 {
     pybind11::class_<BaseObject, Base, 
                      PySofaBaseObject<BaseObject>, 
-                     sofa::sptr<BaseObject> >(m, "BaseObject", pybind11::dynamic_attr())
+                     sofa::sptr<BaseObject> >(m, "BaseObject")
         .def(pybind11::init<>() )
         .def("init", &BaseObject::init)
         .def("bwdInit", &BaseObject::bwdInit)
@@ -72,7 +74,7 @@ void initBindingBaseObject(pybind11::module& m)
         .def("reset",&BaseObject::reset)
         .def("getMutableContext", pybind11::overload_cast<>( &BaseObject::getContext), pybind11::return_value_policy::reference)
         .def("getContext", pybind11::overload_cast<>(&BaseObject::getContext, pybind11::const_), pybind11::return_value_policy::reference)
-        .def("getPath", &internal::getPath)
+        .def("getPath", &getPath)
         .def("getSlaves", &internal::getSlaves)
         ;
 

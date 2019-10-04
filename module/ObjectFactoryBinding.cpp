@@ -8,6 +8,7 @@
 #include "BaseObjectBinding.h"
 #include "BaseDataBinding.h"
 #include "BaseObjectDescriptionBinding.h"
+#include "Exceptions.h"
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/objectmodel/Base.h>
 #include <sofa/core/objectmodel/BaseData.h>
@@ -76,7 +77,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
 
     if (obj == nullptr)
     {
-        throw std::invalid_argument("createObject failed with: " + std::string(pybind11::str(args))  + " " + std::string(pybind11::str(kwargs)) );
+        throw pybind11::type_error("createObject failed with: " + std::string(pybind11::str(args))  + " " + std::string(pybind11::str(kwargs)) );
     }
 
     pybind11::dict dict(kwargs);
@@ -84,11 +85,18 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
     // process elements in the dict that are not taken care of by BaseObjectDescription
     for (auto item : dict)
     {
-        std::string attr = std::string(pybind11::str(item.first));
-        
+        std::string attr = std::string(pybind11::str(item.first));     
+
         if (!isPythonTypeHandledByBaseObjectDescription(item.second))
         {
             pybind11::object value = pybind11::reinterpret_borrow<pybind11::object>(item.second);
+
+            // We allow passing python none objects only in the createObject method, in which case assignemt is simply ignored. 
+            if (value.is_none())
+            {
+                continue;
+            }
+
             // it can only be a data, since links are initialized from strings, which are taken care of by BaseObjectDescription.
             BaseData* data   = obj->findData(attr); 
             if (data)
@@ -98,9 +106,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
             }
             else
             {
-                std::string valueAsString = std::string(pybind11::str(item.second));
-                std::string errorMessage = "Could not read value for data field " + attr + ": " + valueAsString;
-                throw std::invalid_argument("createObject failed " + errorMessage);
+                throw SofaAttributeError(obj.get(), "could not read value for field \"" + attr + "\"");
             }
         }
     }
@@ -125,7 +131,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
     }
 
 
-    return bindDataAndLinks(obj);
+    return pybind11::cast(obj);
 }
 
 

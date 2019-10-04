@@ -39,6 +39,7 @@ set( MODULE_HEADER_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/BaseNodeBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/ContextBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/EventBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.h
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/GNodeBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/ObjectFactoryBinding.h
@@ -60,6 +61,7 @@ set( MODULE_SOURCE_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/BaseNodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ContextBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/EventBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/GNodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ObjectFactoryBinding.cpp

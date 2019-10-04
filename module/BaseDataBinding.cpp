@@ -4,7 +4,9 @@
 * be redistributed. Commercial use is prohibited without a specific license.   *
 *******************************************************************************/
 
+#include "BaseBinding.h"
 #include "BaseDataBinding.h"
+#include "Exceptions.h"
 
 #include <sofa/core/objectmodel/DDGNode.h>
 #include <sofa/core/objectmodel/BaseData.h>
@@ -183,8 +185,7 @@ void setDataValueFromPyArithmetic(BaseData* data, PyArithmeticType pyArithmetic)
     data->endEditVoidPtr();
     if (!res)
     {
-        // type mismatch or too long list
-        throw std::invalid_argument("type mismatch");
+        throw SofaDataAttributeError(data, data->getName() );
     }
 }
 
@@ -194,8 +195,7 @@ void setDataValueFromString(BaseData* data, const std::string& str)
     data->endEditVoidPtr();
     if (!ok)
     {
-        // type mismatch or too long list
-        throw std::invalid_argument("type mismatch");
+        throw SofaDataAttributeError(data, data->getName());
     }
 }
 
@@ -264,7 +264,7 @@ bool setStructValuePtrFromPyDict(void* dataPtr, const AbstractStructureTypeInfo*
 
 bool setValuePtrFromPyObjectDispatch(void* dataPtr, const AbstractTypeInfo* typeInfo, pybind11::handle src  )
 {
-    bool ok = true;
+    bool ok = false;
     if (pybind11::isinstance<pybind11::bool_>(src))
     {
         auto b = pybind11::reinterpret_borrow<pybind11::bool_>(src);
@@ -314,7 +314,7 @@ void setDataValueFromPyContainer(BaseData* data, PyContainerType pyContainer)
     data->endEditVoidPtr();
     if (!ok)
     {
-        throw std::invalid_argument("Unsupported argument");
+        throw SofaDataAttributeError(data, "unsupported assignment");
     }
 }
 
@@ -337,7 +337,18 @@ void setDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
         data->endEditVoidPtr();
         if (!ok)
         {
-            throw std::invalid_argument("Unsupported argument");
+            const std::string& attr = data->getName();
+            const std::string correctSyntax = attr + ".value for deep copy or " + attr + ".setParent() for data link";
+            try
+            {
+                BaseData* v = pyObj.cast<BaseData*>();
+                throw SofaDataAttributeError(data, "no implicit BaseData->BaseData conversion, correct syntax: " + correctSyntax);
+
+            }
+            catch (pybind11::cast_error&) // not a BaseData
+            {
+                throw SofaDataAttributeError(data, "no implicit conversion to BaseData, correct syntax: " + correctSyntax);
+            }
         }
     }
 }
@@ -350,17 +361,17 @@ void pushBackDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
 
     if (!dataContainterTypeInfo)
     {
-        throw std::invalid_argument("Data does not hold a container type");
+        throw SofaDataTypeError(data, "does not hold a container type");
     }
 
     if (dataContainterTypeInfo->FixedContainerSize())
     {
-        throw std::invalid_argument("Data does not hold a resizable container type");
+        throw SofaDataTypeError(data, "does not hold a resizeable container type");
     }
 
     if (dataContainterTypeInfo->ContainerKind() != sofa::defaulttype::ContainerKindEnum::Array)
     {
-        throw std::invalid_argument("Only implemented for Array container kind.");
+        throw SofaDataTypeError(data, "only implemented for array container type");
     }
 
     void* dataPtr = data->beginEditVoidPtr();
@@ -375,7 +386,7 @@ void pushBackDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
     data->endEditVoidPtr();
     if (!ok)
     {
-        throw std::invalid_argument("Unsupported argument");
+        throw SofaDataTypeError(data, "unsupported assignment");
     }
 }
 
@@ -386,11 +397,11 @@ void insertDataValueAtIndexFromPyObject(BaseData* data, std::size_t index, pybin
 
     if (!dataContainterTypeInfo)
     {
-        throw std::invalid_argument("Data does not hold a container type");
+        throw SofaDataTypeError(data, "does not hold a container type");
     }
     if (dataContainterTypeInfo->ContainerKind() != sofa::defaulttype::ContainerKindEnum::Array)
     {
-        throw std::invalid_argument("Currently only implemented for Array container kind.");
+        throw SofaDataTypeError(data, "insert only implemented for array container type");
     }
     void* dataPtr = data->beginEditVoidPtr();
     const std::size_t size = dataContainterTypeInfo->containerSize(dataPtr);
@@ -401,14 +412,14 @@ void insertDataValueAtIndexFromPyObject(BaseData* data, std::size_t index, pybin
         data->endEditVoidPtr();
         if (!ok)
         {
-            throw std::invalid_argument("Unsupported argument");
+            throw SofaDataValueError(data, "unsupported assignment");
         }
     }
     else
     {
         data->endEditVoidPtr();
-        std::string message = "index: " + std::to_string(index) + " size: " + std::to_string(size);
-        throw pybind11::index_error(message.c_str());
+        std::string message = data->getName() + " index: " + std::to_string(index) + " size: " + std::to_string(size);
+        throw SofaDataIndexError(data, message.c_str());
     }
 }
 
@@ -419,12 +430,14 @@ void resizeData(BaseData* data, std::size_t size)
 
     if (!dataContainterTypeInfo)
     {
-        throw std::invalid_argument("Data does not hold a container type");
+        // TypeError
+        throw SofaDataAttributeError(data,"does not hold a container type");
     }
 
     if (dataContainterTypeInfo->FixedContainerSize())
     {
-        throw std::invalid_argument("Data does not hold a resizable container type");
+        // TypeError
+        throw SofaDataAttributeError(data, "does not hold a resizeable container type");
     }
 
     void* dataPtr = data->beginEditVoidPtr();
@@ -432,11 +445,11 @@ void resizeData(BaseData* data, std::size_t size)
     data->endEditVoidPtr();
 }
 
-pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTypeInfo* typeInfo)
+pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTypeInfo* typeInfo, const BaseData* data)
 {
     if (!typeInfo)
     {
-        throw std::invalid_argument("Unsupported DataTypeInfo");
+        throw SofaDataAttributeError(data, "unsupported DataTypeInfo");
         return pybind11::object();
     }
     if (typeInfo->IsSingleValue())
@@ -464,7 +477,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
         }
         else
         {
-            throw std::invalid_argument("unsupported DataTypeInfo");
+            throw SofaDataAttributeError(data, "unsupported DataTypeInfo");
             return pybind11::object();
         }
     }
@@ -479,7 +492,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
             const AbstractTypeInfo* typeInfo = structTypeInfo->getMemberTypeForIndex(i);
             std::string dataStructMemberName = structTypeInfo->getMemberName(dataPtr, i);
             const void* dataStructMemberPtr = structTypeInfo->getMemberValue(dataPtr, i);
-            pybind11::object obj = getDataPtrValueAsPyObject(dataStructMemberPtr, typeInfo);
+            pybind11::object obj = getDataPtrValueAsPyObject(dataStructMemberPtr, typeInfo, data);
             pyDict[dataStructMemberName.c_str()] = obj;
         }
         return pyDict;
@@ -495,7 +508,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
             std::size_t index=0;
             while (itData != containerTypeInfo->cend(dataPtr))
             {
-                pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType());
+                pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType(), data);
                 pyTuple[index] = obj;
                 ++itData;
                 ++index;
@@ -509,7 +522,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
             auto itData = containerTypeInfo->cbegin(dataPtr);
             while (itData != containerTypeInfo->cend(dataPtr))
             {
-                pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType());
+                pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType(), data);
                 pyList.append(obj);
                 ++itData;
             }
@@ -519,7 +532,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
     }
     else
     {
-        throw std::invalid_argument("unsupported DataTypeInfo");
+        throw SofaDataAttributeError(data, "unsupported DataTypeInfo");
         return pybind11::object();
     }
 }
@@ -535,7 +548,7 @@ pybind11::object getDataValueAsPyObject(const BaseData* data)
         return pyStr;
     }
 
-    pybind11::object obj = getDataPtrValueAsPyObject(data->getValueVoidPtr(), typeInfo);
+    pybind11::object obj = getDataPtrValueAsPyObject(data->getValueVoidPtr(), typeInfo, data);
     return obj;
 }
 
@@ -545,7 +558,7 @@ pybind11::object getDataValueAtIndex(const BaseData* data, std::size_t index)
     const AbstractContainerTypeInfo* dataContainterTypeInfo = dataTypeInfo->ContainerType();
     if (!dataContainterTypeInfo)
     {
-        throw std::invalid_argument("Data does not hold a container type");
+        throw SofaDataTypeError(data, "does not hold a container type");
     }
     const void* dataPtr = data->getValueVoidPtr();
     const std::size_t size = dataContainterTypeInfo->containerSize(dataPtr);
@@ -553,7 +566,7 @@ pybind11::object getDataValueAtIndex(const BaseData* data, std::size_t index)
     if (index < size)
     {
         const void* valuePtr = dataContainterTypeInfo->getItemValue(dataPtr, index);
-        pyObj = getDataPtrValueAsPyObject(valuePtr, dataContainterTypeInfo->getMappedType() );
+        pyObj = getDataPtrValueAsPyObject(valuePtr, dataContainterTypeInfo->getMappedType(), data );
     }
     else
     {
@@ -600,7 +613,7 @@ pybind11::object getDataJsonAsPyObject(const BaseData* data)
     }
     else
     {
-        throw std::invalid_argument("Unsupported DataTypeInfo for JSON parsing");
+        throw SofaDataAttributeError(data, "unsupported DataTypeInfo for JSON parsing");
         output = "{}";
     }
     pybind11::str pyStr(output);
@@ -619,7 +632,7 @@ void setDataJsonFromPyObject(BaseData* data, const std::string& json)
     }
     else
     {
-        throw std::invalid_argument("Unsupported DataTypeInfo for JSON parsing");
+        throw SofaDataAttributeError(data, "unsupported DataTypeInfo for JSON parsing");
     }
 }
 

@@ -18,6 +18,8 @@ namespace sofa
 namespace python
 {
 
+std::string getPath(const sofa::core::objectmodel::BaseObject* obj);
+
 void initBindingBaseObject(pybind11::module& m);
 
 

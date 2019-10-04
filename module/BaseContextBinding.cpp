@@ -33,7 +33,7 @@ void appendMatchingObjects( std::vector< pybind11::object >& objects,
     {
         if ( classInfo->dynamicCast(obj.get()) )
         {
-            objects.push_back(bindDataAndLinks(obj));
+            objects.push_back(pybind11::cast(obj));
         }
     }
 }
@@ -77,7 +77,7 @@ std::vector< pybind11::object > searchObjects(BaseContext* ctx, BaseContext::Sea
     {
         for (const auto& obj : allObjects)
         {
-            allBindedObjects.push_back(bindDataAndLinks(obj));
+            allBindedObjects.push_back(pybind11::cast(obj));
         }
         
         return allBindedObjects;
@@ -174,7 +174,7 @@ pybind11::object getObject(BaseContext* ctx, std::string path)
 
     if (obj)
     {
-        return bindDataAndLinks(obj);
+        return pybind11::cast(obj);
     }
     else
     {

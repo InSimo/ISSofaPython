@@ -33,21 +33,21 @@ pybind11::object createRootNode(const std::string& name)
 {
     sofa::sptr<Node> root = sofa::simulation::tree::getSimulation()->createNewGraph(name);
     sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
-    return bindDataAndLinks(gNodeRoot);
+    return pybind11::cast(gNodeRoot);
 }
 
 pybind11::object createNode(const std::string& name)
 {
     sofa::sptr<Node> node = sofa::simulation::tree::getSimulation()->createNewNode(name);
     sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
-    return bindDataAndLinks(gNode);
+    return pybind11::cast(gNode);
 }
 
 pybind11::object getRoot()
 {
     sofa::sptr<Node> root = sofa::simulation::tree::getSimulation()->GetRoot();
     sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
-    return bindDataAndLinks(gNodeRoot);
+    return pybind11::cast(gNodeRoot);
 }
 
 pybind11::object getChildren(sofa::sptr<Node> node)
@@ -67,7 +67,7 @@ pybind11::object createChild(sofa::sptr<Node> node, const std::string& name)
     sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
     sofa::sptr<Node> nChild = gNode->createChild(name);
     sofa::sptr<GNode> gChild = sofa::core::objectmodel::SPtr_static_cast<GNode>(nChild);
-    return bindDataAndLinks(gChild);
+    return pybind11::cast(gChild);
 }
 
 }
@@ -76,7 +76,7 @@ void initBindingGNode(pybind11::module& m)
 {
     pybind11::class_<GNode, Node,
         PySofaGNode,
-        sofa::sptr< GNode > > gNode(m, "GNode", pybind11::dynamic_attr());
+        sofa::sptr< GNode > > gNode(m, "GNode");
 
     gNode.def(pybind11::init<>())
          .def("createObject", &internal::createObject)
