@@ -77,7 +77,7 @@ void initBindingGNode(pybind11::module& m)
     pybind11::class_<GNode, Node,
         PySofaGNode,
         sofa::sptr< GNode > > gNode(m, "GNode", pybind11::dynamic_attr());
-           
+
     gNode.def(pybind11::init<>())
          .def("createObject", &internal::createObject)
          .def("removeObject", &GNode::removeObject)
@@ -86,6 +86,7 @@ void initBindingGNode(pybind11::module& m)
          .def("createChild", &internal::createChild)
          .def("getChildren", &internal::getChildren)
          .def("getPathName", &Node::getPathName)
+         .def("detachFromGraph", &Node::detachFromGraph)
          ;
 
     m.def("createRootNode", &internal::createRootNode);
