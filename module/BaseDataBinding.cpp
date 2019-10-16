@@ -15,7 +15,7 @@
 #include <sofa/core/dataparser/JsonDataParser.h>
 
 #include <pybind11/stl.h>
-
+#include <pybind11/numpy.h>
 #include <stdexcept>
 
 namespace sofa
@@ -36,34 +36,30 @@ using sofa::defaulttype::AbstractStructureTypeInfo;
 
 
 
-template< typename PyArithmeticType >
-struct PyArithmeticTypeCaster;
-
-
-template <>
-struct PyArithmeticTypeCaster<pybind11::bool_>
+template< typename TArithmeticType >
+struct ArithmeticTypeCaster
 {
-    static long long castToInteger(const pybind11::bool_& pyBool)
+    static long long castToInteger(const TArithmeticType& t)
     {
-        bool value(pyBool);
-        return value ? 1 : 0;
+        long long value(t);
+        return value;
     }
 
-    static unsigned long long castToUnsigned(const pybind11::bool_& pyBool)
+    static unsigned long long castToUnsigned(const TArithmeticType& t)
     {
-        bool value(pyBool);
-        return value ? 1 : 0;
+        unsigned long long value(t);
+        return value;
     }
 
-    static SReal castToScalar(const pybind11::bool_& pyBool)
+    static SReal castToScalar(const TArithmeticType& t)
     {
-        bool value(pyBool);
-        return value ? 1 : 0;
+        SReal value(t);
+        return SReal(value);
     }
 };
 
 template <>
-struct PyArithmeticTypeCaster<pybind11::int_>
+struct ArithmeticTypeCaster<pybind11::int_>
 {
     static long long castToInteger(const pybind11::int_& pyInt)
     {
@@ -85,7 +81,7 @@ struct PyArithmeticTypeCaster<pybind11::int_>
 };
 
 template <>
-struct PyArithmeticTypeCaster<pybind11::float_>
+struct ArithmeticTypeCaster<pybind11::float_>
 {
     static long long castToInteger(const pybind11::float_& pyFloat)
     {
@@ -106,8 +102,37 @@ struct PyArithmeticTypeCaster<pybind11::float_>
 };
 
 
-template< typename PyArithmeticType > 
-bool setFinalValueFromPyArithmetic(void* dataPtr, PyArithmeticType pyArithmetic, const AbstractMultiValueTypeInfo* typeInfo, std::size_t index = 0)
+template< typename TBoolean >
+struct BooleanArithmeticTypeCaster
+{
+    static long long castToInteger(const TBoolean& b)
+    {
+        bool value(b);
+        return value ? 1 : 0;
+    }
+
+    static unsigned long long castToUnsigned(const TBoolean& b)
+    {
+        bool value(b);
+        return value ? 1 : 0;
+    }
+
+    static SReal castToScalar(const TBoolean& b)
+    {
+        bool value(b);
+        return value ? 1 : 0;
+    }
+};
+
+template<>
+struct ArithmeticTypeCaster<bool> : public BooleanArithmeticTypeCaster<bool> {};
+
+template<>
+struct ArithmeticTypeCaster<pybind11::bool_> : public BooleanArithmeticTypeCaster<pybind11::bool_> {};
+
+
+template< typename TArithmeticType >
+bool setFinalValueFromArithmetic(void* dataPtr, TArithmeticType t, const AbstractMultiValueTypeInfo* typeInfo, std::size_t index = 0)
 {
     bool ok = true;
 
@@ -126,17 +151,17 @@ bool setFinalValueFromPyArithmetic(void* dataPtr, PyArithmeticType pyArithmetic,
         if (typeInfo->Scalar())
         {            
             typeInfo->setFinalValueScalar(dataPtr, index,
-                PyArithmeticTypeCaster<PyArithmeticType>::castToScalar(pyArithmetic) );
+                                          ArithmeticTypeCaster<TArithmeticType>::castToScalar(t) );
         }
         else if (typeInfo->Integer()) 
         {
             typeInfo->setFinalValueInteger(dataPtr, index,
-                PyArithmeticTypeCaster<PyArithmeticType>::castToInteger(pyArithmetic));
+                                           ArithmeticTypeCaster<TArithmeticType>::castToInteger(t));
         }
         else if (typeInfo->Unsigned())
         {
             typeInfo->setFinalValueInteger(dataPtr, index,
-                PyArithmeticTypeCaster<PyArithmeticType>::castToUnsigned(pyArithmetic));
+                                           ArithmeticTypeCaster<TArithmeticType>::castToUnsigned(t));
         }
         else
         {
@@ -177,11 +202,11 @@ bool setFinalValueFromString(void* dataPtr, const std::string& str, const Abstra
     return ok;
 }
 
-template< typename PyArithmeticType >
-void setDataValueFromPyArithmetic(BaseData* data, PyArithmeticType pyArithmetic)
+template< typename TArithmeticType >
+void setDataValueFromPyArithmetic(BaseData* data, TArithmeticType t)
 {
     auto dataPtr = data->beginEditVoidPtr();
-    bool res = setFinalValueFromPyArithmetic<PyArithmeticType>(dataPtr, pyArithmetic, data->getValueTypeInfo()->SingleValueType() );
+    bool res = setFinalValueFromArithmetic<TArithmeticType>(dataPtr, t, data->getValueTypeInfo()->SingleValueType() );
     data->endEditVoidPtr();
     if (!res)
     {
@@ -262,29 +287,63 @@ bool setStructValuePtrFromPyDict(void* dataPtr, const AbstractStructureTypeInfo*
 
 }
 
+template< typename TArithmetic >
+bool setFinalValueCastFromPyType(void* dataPtr, const AbstractTypeInfo* typeInfo, pybind11::handle src)
+{
+    bool ok = true;
+    try
+    {
+        TArithmetic t = src.cast< TArithmetic >();
+        ok = setFinalValueFromArithmetic<TArithmetic>(dataPtr,t, typeInfo->MultiValueType());
+    }
+    catch (const pybind11::cast_error&) // not a TArithmetic 
+    {
+        ok = false;
+    }
+
+    return ok;
+}
+
+bool setFinalValueCastFromPyString(void* dataPtr, const AbstractTypeInfo* typeInfo, pybind11::handle src)
+{
+    bool ok = true;
+    try
+    {
+        std::string str = src.cast< std::string >();
+        ok = setFinalValueFromString(dataPtr, str, typeInfo->MultiValueType());
+    }
+    catch (const pybind11::cast_error&) // not a string 
+    {
+        ok = false;
+    }
+    return ok;
+}
+
 bool setValuePtrFromPyObjectDispatch(void* dataPtr, const AbstractTypeInfo* typeInfo, pybind11::handle src  )
 {
     bool ok = false;
-    if (pybind11::isinstance<pybind11::bool_>(src))
+
+    // note: numpy bool types are not instances of pybind11::bool_, they are taken care of in another statement
+    if (pybind11::isinstance<pybind11::bool_>(src)) 
     {
         auto b = pybind11::reinterpret_borrow<pybind11::bool_>(src);
-        ok = setFinalValueFromPyArithmetic<pybind11::bool_>(dataPtr, b, typeInfo->MultiValueType() );
+        ok = setFinalValueFromArithmetic<pybind11::bool_>(dataPtr, b, typeInfo->MultiValueType());
     }
     else if (pybind11::isinstance<pybind11::int_>(src))
     {
         auto i = pybind11::reinterpret_borrow<pybind11::int_>(src);
-        ok = setFinalValueFromPyArithmetic<pybind11::int_>(dataPtr, i, typeInfo->MultiValueType() );
+        ok = setFinalValueFromArithmetic<pybind11::int_>(dataPtr, i, typeInfo->MultiValueType());
     }
     else if (pybind11::isinstance<pybind11::float_>(src))
     {
         auto f = pybind11::reinterpret_borrow<pybind11::float_>(src);
-        ok = setFinalValueFromPyArithmetic<pybind11::float_>(dataPtr, f, typeInfo->MultiValueType() );
+        ok = setFinalValueFromArithmetic<pybind11::float_>(dataPtr, f, typeInfo->MultiValueType());
     }
     else if (pybind11::isinstance<pybind11::str>(src))
     {
         auto s = pybind11::reinterpret_borrow<pybind11::str>(src);
         std::string str(s);
-        ok = setFinalValueFromString(dataPtr, str, typeInfo->MultiValueType() );
+        ok = setFinalValueFromString(dataPtr, str, typeInfo->MultiValueType());
     }
     else if (pybind11::isinstance<pybind11::dict>(src))
     {
@@ -294,14 +353,29 @@ bool setValuePtrFromPyObjectDispatch(void* dataPtr, const AbstractTypeInfo* type
     else if (pybind11::isinstance<pybind11::list>(src))
     {
         auto l = pybind11::reinterpret_borrow<pybind11::list>(src);
-        ok = setValuePtrFromPyContainer<pybind11::list>(dataPtr,typeInfo->ContainerType(), l  );
+        ok = setValuePtrFromPyContainer<pybind11::list>(dataPtr, typeInfo->ContainerType(), l);
     }
     else if (pybind11::isinstance<pybind11::tuple>(src))
     {
         auto t = pybind11::reinterpret_borrow<pybind11::tuple>(src);
-        ok = setValuePtrFromPyContainer<pybind11::tuple>(dataPtr,typeInfo->ContainerType(), t );
+        ok = setValuePtrFromPyContainer<pybind11::tuple>(dataPtr, typeInfo->ContainerType(), t);
     }
+    // try pybind11 built in casters from here, if everything else has failed.
+    // the expressions below use runtime exceptions if type casting is invalid,
+    // so they may have a higher runtime cost.
 
+    // try pybind11 built in cast to c++ double 
+    // Anything on the python side that ranges from scalar value to unsigned integer will fall here, 
+    // and numpy boolean type as well ( which are distinct from pybind11::bool_ )
+    else if (setFinalValueCastFromPyType<double>(dataPtr, typeInfo, src))
+    {
+        ok = true;
+    }
+    // try pybind11 buit cast to c++ string 
+    else if (setFinalValueCastFromPyString(dataPtr, typeInfo, src))
+    {
+        ok = true;
+    }
     return ok;
 }
 
