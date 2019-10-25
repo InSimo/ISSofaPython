@@ -33,6 +33,8 @@ cmake_dependent_option(ISSOFAPYTHON_INSTALL_USER "If ISSOFAPYTHON_USE_LOCAL_ENV 
                        "NOT ISSOFAPYTHON_USE_LOCAL_ENV" OFF)
 set(ISSOFAPYTHON_PIP_INSTALL_OPTIONS "--editable" CACHE STRING "Options given to pip install commands")
 
+set(ISSOFAPYTHON_ADDITIONAL_SYS_PATH_DIRS "" CACHE STRING "A semicolon separated list of project dirs to add to the python sys.path (relative to the root of the project)")
+
 if(ISSOFAPYTHON_USE_LOCAL_ENV)
     # We also set a cached var with a generic name so that it can also be detected/used in other generic modules)
     set(PYTHON_USE_LOCAL_ENV TRUE CACHE BOOL "Whether or not a local Python environment is available and should be used" FORCE)
@@ -129,8 +131,13 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
         set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_LOCAL_ENV_DIR}/lib/python2.7")
         set(SITECUSTOMIZE_INSTALL_DEST_DIR "lib/python2.7") # hardcoding 'lib' instead of ${DEFAULT_LIB_INSTALL} because if different, python won't work.
     endif()
+    file(RELATIVE_PATH PROJECT_ROOT_REL_DIR ${SITECUSTOMIZE_DEST_DIR} ${PROJECT_ROOT_DIR})
     configure_file(${SITECUSTOMIZE_FILE} ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py)
-    install(FILES ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py DESTINATION ${SITECUSTOMIZE_INSTALL_DEST_DIR})
+    # Same thing for the install version
+    file(RELATIVE_PATH PROJECT_ROOT_REL_DIR "${CMAKE_INSTALL_PREFIX}/${SITECUSTOMIZE_INSTALL_DEST_DIR}" ${PROJECT_ROOT_DIR})
+    # We also put this version in the build tree, then it will be copied into the install tree at install time
+    configure_file(${SITECUSTOMIZE_FILE} ${SITECUSTOMIZE_DEST_DIR}/sitecustomize-install.py)
+    install(FILES ${SITECUSTOMIZE_DEST_DIR}/sitecustomize-install.py DESTINATION ${SITECUSTOMIZE_INSTALL_DEST_DIR} RENAME sitecustomize.py)
 
     target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_USE_LOCAL_ENV=\"${ISSOFAPYTHON_USE_LOCAL_ENV}\"")
 

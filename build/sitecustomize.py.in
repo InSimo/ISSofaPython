@@ -1,5 +1,7 @@
 """
-sitecustomize.py is automatically imported by Python when the interpreter
+This file is processed by CMake, to generate a proper sitecustomize.py module.
+
+The sitecustomize module is automatically imported by Python when the interpreter
 is initialized, allowing to adjust sys.path for our project.
 For a better chance to be used, the file can be placed next to the site.py
 file in the embedded python environment.
@@ -74,3 +76,23 @@ if not IS_WIN:
     lib_dir = os.path.join(sys.prefix, 'lib')
     if os.path.exists(os.path.join(lib_dir, 'ISSofaPython.so')):
         sys.path.insert(0, os.path.abspath(lib_dir))
+
+# Make importable some python modules or packages that are intentionally not
+# copied into the local python environment of the project
+ADDITIONAL_SYS_PATH_DIRS = '${ISSOFAPYTHON_ADDITIONAL_SYS_PATH_DIRS}'.split(';')
+if ADDITIONAL_SYS_PATH_DIRS:
+    SELF_DIR = os.path.abspath(os.path.dirname(__file__))
+    # Relative dir to the root of the project (when being in a build tree or
+    # install tree, but won't fit the packaged version)
+    PROJECT_ROOT_REL_DIR = '${PROJECT_ROOT_REL_DIR}'
+    PROJECT_ROOT_DIR = os.path.abspath(os.path.join(SELF_DIR, PROJECT_ROOT_REL_DIR))
+    IS_PACKAGED = not os.path.exists(os.path.join(PROJECT_ROOT_DIR, '.bin.json'))
+    if IS_PACKAGED:
+        if IS_WIN:
+            # on Windows the whole python env is inside the bin dir
+            PROJECT_ROOT_DIR = os.path.join(LOCAL_ENV_ROOT, '..')
+        else:
+            PROJECT_ROOT_DIR = LOCAL_ENV_ROOT
+    # Now we determined the correct root dir, let's modify sys.path
+    for rel_dir in ADDITIONAL_SYS_PATH_DIRS:
+        sys.path.insert(0, os.path.join(PROJECT_ROOT_DIR, rel_dir))
