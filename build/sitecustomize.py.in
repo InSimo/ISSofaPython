@@ -11,11 +11,12 @@ only disable the usage of the user site dir, but anyway we also have the
 case of the python interpreter directly run without any wrapper or option:
 let's be robust and always give a priority to the local modules/packages.
 
-/!\ Be careful not doing any print in this file, as it can lead to
-    an IOError(9, 'Bad file descriptor') exception when the interpreter
-    is initialized from C/C++ code, making the module import fail.
-    It also interfers with processes using the output of well known
-    commands like "python -m site --user-site".
+.. warning::
+    Be careful not doing any print in this file, as it can lead to
+    an IOError(9, 'Bad file descriptor') exception when the interpreter is
+    initialized from C/C++ code, making the module import fail. It also
+    interfers with processes using the output of well known commands like
+    "python -m site --user-site".
 """
 import os
 import sys
@@ -27,6 +28,8 @@ IS_WIN = sys.platform.startswith('win')
 # linked to another python install (set at CMake configuration time)
 IS_STANDALONE_PYTHON = '${EMBEDDED_PYTHON}' == 'TRUE'
 
+SYS_PATH = sys.path
+
 if IS_STANDALONE_PYTHON and site.ENABLE_USER_SITE:
     # When not in a virtualenv, let's remove the user site-packages dir
     # from sys.path, to try to be isolated from packages potentially already
@@ -35,10 +38,10 @@ if IS_STANDALONE_PYTHON and site.ENABLE_USER_SITE:
     # ... except if .pth files exist in the user site dir: in this case the
     # paths listed in these files are added in sys.path (one way to discard
     # them is to enable STRICT_PATH_ISOLATION).
-    user_site = site.USER_SITE
+    USER_SITE = site.USER_SITE
     # using a while loop because in certain contexts it can be there 2 times ...
-    while user_site in sys.path:
-        sys.path.remove(user_site)
+    while USER_SITE in SYS_PATH:
+        SYS_PATH.remove(USER_SITE)
 
 # Whether to only allow sys.path to contain directories that are inside
 # our local environment, ensuring a strict isolation from packages
@@ -53,18 +56,18 @@ if IS_STANDALONE_PYTHON and site.ENABLE_USER_SITE:
 STRICT_PATH_ISOLATION = False
 
 # Determine a root 'prefix' dir from which we assume our local environment starts
-LOCAL_ENV_ROOT = os.path.abspath(os.path.join(sys.prefix, '..'))
+LOCAL_ENV_ROOT = (os.path.abspath(os.path.join(sys.prefix, '..')) if IS_WIN
+                  else sys.prefix)
 
 # Lower the priority of external directories that are in sys.path, or totally
 # discard them
-sys_path = sys.path
-for p in sys_path[:]:
+for p in SYS_PATH[:]:
     if not p.startswith(LOCAL_ENV_ROOT):
-        sys_path.remove(p)
+        SYS_PATH.remove(p)
         if not STRICT_PATH_ISOLATION:
             # we move it later in sys.path instead of removing it
             # (ensuring a priority on local modules/packages)
-            sys_path.append(p)
+            SYS_PATH.append(p)
 
 if not IS_WIN:
     # On Linux we install binaries and libs in distinct folders, and
@@ -73,9 +76,9 @@ if not IS_WIN:
     # If the python home is properly set before initializing the interpreter
     # in the C++ code, sys.prefix should be the absolute root path of the
     # python env of the project.
-    lib_dir = os.path.join(sys.prefix, 'lib')
-    if os.path.exists(os.path.join(lib_dir, 'ISSofaPython.so')):
-        sys.path.insert(0, os.path.abspath(lib_dir))
+    LIB_DIR = os.path.join(sys.prefix, 'lib')
+    if os.path.exists(os.path.join(LIB_DIR, 'ISSofaPython.so')):
+        SYS_PATH.insert(0, os.path.abspath(LIB_DIR))
 
 # Make importable some python modules or packages that are intentionally not
 # copied into the local python environment of the project
@@ -95,4 +98,4 @@ if ADDITIONAL_SYS_PATH_DIRS:
             PROJECT_ROOT_DIR = LOCAL_ENV_ROOT
     # Now we determined the correct root dir, let's modify sys.path
     for rel_dir in ADDITIONAL_SYS_PATH_DIRS:
-        sys.path.insert(0, os.path.join(PROJECT_ROOT_DIR, rel_dir))
+        SYS_PATH.insert(0, os.path.join(PROJECT_ROOT_DIR, rel_dir))
