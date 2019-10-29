@@ -91,11 +91,7 @@ if ADDITIONAL_SYS_PATH_DIRS:
     PROJECT_ROOT_DIR = os.path.abspath(os.path.join(SELF_DIR, PROJECT_ROOT_REL_DIR))
     IS_PACKAGED = not os.path.exists(os.path.join(PROJECT_ROOT_DIR, '.bin.json'))
     if IS_PACKAGED:
-        if IS_WIN:
-            # on Windows the whole python env is inside the bin dir
-            PROJECT_ROOT_DIR = os.path.join(LOCAL_ENV_ROOT, '..')
-        else:
-            PROJECT_ROOT_DIR = LOCAL_ENV_ROOT
+        PROJECT_ROOT_DIR = LOCAL_ENV_ROOT
     # Now we determined the correct root dir, let's modify sys.path
     for rel_dir in ADDITIONAL_SYS_PATH_DIRS:
         SYS_PATH.insert(0, os.path.join(PROJECT_ROOT_DIR, rel_dir))
