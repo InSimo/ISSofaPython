@@ -415,7 +415,7 @@ void setDataValueFromPyObject(BaseData* data, pybind11::object pyObj)
             const std::string correctSyntax = attr + ".value for deep copy or " + attr + ".setParent() for data link";
             try
             {
-                BaseData* v = pyObj.cast<BaseData*>();
+                pyObj.cast<BaseData*>();
                 throw SofaDataAttributeError(data, "no implicit BaseData->BaseData conversion, correct syntax: " + correctSyntax);
 
             }

@@ -59,7 +59,7 @@ void setAttrErrorCheck(sofa::core::objectmodel::Base* self, const std::string& a
         try
         {
 
-            BaseData* v = value.cast<BaseData*>();
+            value.cast<BaseData*>();
             throw SofaDataAttributeError(d, "no implicit BaseData->BaseData conversion, correct syntax: " + correctSyntax);
 
         }

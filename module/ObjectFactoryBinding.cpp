@@ -88,7 +88,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
         std::ostringstream oss;
         std::ostream_iterator<std::string::value_type> outIt(oss, ", ");
 
-        for (auto i=0;i<unAccessedAttributes.size();++i)
+        for (std::size_t i=0;i<unAccessedAttributes.size();++i)
         {
             oss << unAccessedAttributes[i];
             const bool isLast = i == unAccessedAttributes.size() - 1;
