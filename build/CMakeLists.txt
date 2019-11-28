@@ -160,6 +160,7 @@ set(ISSOFAPYTHON_INCLUDE_DIR "${ISSOFAPYTHON_BUILD_INCLUDE_DIR}")
 configure_package_config_file(ISSofaPythonConfig.cmake.in
                               ${ISSOFAPYTHON_BUILD_CMAKE_DIR}/ISSofaPythonConfig.cmake
                               INSTALL_DESTINATION ${ISSOFAPYTHON_BUILD_CMAKE_DIR}
+                              INSTALL_PREFIX ${CMAKE_BINARY_DIR}
                               PATH_VARS ISSOFAPYTHON_INCLUDE_DIR)
 
 # ISSofaPythonConfig.cmake (installed)
