@@ -9,14 +9,36 @@ def loadPlugin(name):
 def msg_fatal(msg):
     pass
 
-class _NodeMock(object):
-    pass
+class _BaseContextMock(object):
+    dt = None
+    addObject = \
+    removeObject = \
+    getObject = \
+    searchUp = \
+    searchAllUp = \
+    searchLocal = \
+    searchAllLocal = \
+    searchParents = \
+    searchAllParents = \
+    searchAllDown = \
+    searchRoot = \
+    searchAllRoot = \
+    getObjects = \
+    getDt = \
+    getTime = \
+        lambda *args, **kwargs: None
 
 def createRootNode(name):
-    return _NodeMock()
+    return _BaseContextMock()
 
 def initializeGraph(node):
     pass
 
 def cleanupGraph(node):
+    pass
+
+def step(node, dt):
+    pass
+
+def addDataPath(path):
     pass
