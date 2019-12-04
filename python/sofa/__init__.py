@@ -31,6 +31,7 @@ def read_sofaenv_file(sofaenv_path):
             value = value.rstrip()
             if variable == "SOFA_PRELOAD":
                 loadPlugin(value)
+                print('--- sofa loadPlugin %s' % value)
     fsofaenv.close()
 
 # Load plugins declared in sofa.env with SOFA_PRELOAD
