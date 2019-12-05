@@ -42,3 +42,6 @@ def step(node, dt):
 
 def addDataPath(path):
     pass
+
+def getRoot():
+    pass
