@@ -53,8 +53,12 @@ PythonSceneLoader::PythonSceneLoader()
         auto syspath = sys.attr("path").cast<pybind11::list>();
         for (const std::string& s: localPath)
         {
-            std::cout << "ISSofaPython: adding to python path: " << s << std::endl;
-            syspath.append(s);
+            // Append the path to sys.path, if not already there
+            if (!syspath.contains(s))
+            {
+                std::cout << "ISSofaPython: adding to python path: " << s << std::endl;
+                syspath.append(s);
+            }
         }
     }
 #ifdef ISSOFAPYTHON_DONT_WRITE_BYTECODE
