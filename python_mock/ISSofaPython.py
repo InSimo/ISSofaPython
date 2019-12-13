@@ -11,6 +11,8 @@ def msg_fatal(msg):
 
 class _BaseContextMock(object):
     dt = None
+    createObject = \
+    createChild = \
     addObject = \
     removeObject = \
     getObject = \
@@ -31,6 +33,15 @@ class _BaseContextMock(object):
 def createRootNode(name):
     return _BaseContextMock()
 
+def getRoot():
+    return _BaseContextMock()
+
+def getNode(path):
+    return _BaseContextMock()
+
+def getObject(path):
+    return _BaseContextMock()
+
 def initializeGraph(node):
     pass
 
@@ -43,5 +54,19 @@ def step(node, dt):
 def addDataPath(path):
     pass
 
-def getRoot():
+class BaseObject(object):
+    pass
+
+class PythonController(object):
+    def addCallback(self, evt, cb):
+        pass
+
+class PythonEvent(object):
+    pass
+
+class AnimateBeginEvent(object):
+    def __init__(self, _):
+        pass
+
+class GNode(object):
     pass
