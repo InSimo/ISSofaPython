@@ -575,34 +575,17 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
     {
         const AbstractContainerTypeInfo* containerTypeInfo = typeInfo->ContainerType();
         std::size_t containerSize = containerTypeInfo->containerSize(dataPtr);
-        if (containerTypeInfo->FixedContainerSize())
+        pybind11::list pyList;
+        auto itData = containerTypeInfo->cbegin(dataPtr);
+        while (itData != containerTypeInfo->cend(dataPtr))
         {
-            pybind11::tuple pyTuple(containerSize);
-            auto itData = containerTypeInfo->cbegin(dataPtr);
-            std::size_t index=0;
-            while (itData != containerTypeInfo->cend(dataPtr))
-            {
-                pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType(), data);
-                pyTuple[index] = obj;
-                ++itData;
-                ++index;
-            }
-
-            return pyTuple;
+            pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType(), data);
+            pyList.append(obj);
+            ++itData;
         }
-        else
-        {
-            pybind11::list pyList;
-            auto itData = containerTypeInfo->cbegin(dataPtr);
-            while (itData != containerTypeInfo->cend(dataPtr))
-            {
-                pybind11::object obj = getDataPtrValueAsPyObject(itData.value(), itData.valueType(), data);
-                pyList.append(obj);
-                ++itData;
-            }
 
-            return pyList;
-        }
+        return pyList;
+
     }
     else
     {
