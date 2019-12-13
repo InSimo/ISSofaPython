@@ -11,7 +11,7 @@ def find_sofaenv_file():
 
     parent_level = 1
     reldir = '.'
-    python_dir = os.path.dirname(os.path.realpath(sys.executable))
+    python_dir = os.path.dirname(os.path.realpath(os.__file__))
     while parent_level < 4 and not sofaenv_found:
         reldir = os.path.join(reldir, '..')
         sofaenv_path = os.path.join(python_dir, reldir, "sofa.env")
@@ -30,8 +30,10 @@ def read_sofaenv_file(sofaenv_path):
             variable, value = line.split('=')
             value = value.rstrip()
             if variable == "SOFA_PRELOAD":
-                loadPlugin(value)
-                print('--- sofa loadPlugin %s' % value)
+                try:
+                    loadPlugin(value)
+                except RuntimeError as exc:
+                    print('Could not load the %r plugin: %s' % (value, exc))
     fsofaenv.close()
 
 # Load plugins declared in sofa.env with SOFA_PRELOAD
