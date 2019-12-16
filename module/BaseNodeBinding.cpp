@@ -55,7 +55,8 @@ void initBindingBaseNode(pybind11::module& m)
         .def("removeObject", &BaseNode::removeObject)
         .def("addChild", &BaseNode::addChild)
         .def("removeChild", &BaseNode::removeChild)
-        .def("getPath", &getPath)
+        .def("getPath", &getPath) // deprecated, prefer the less verbose "path" property
+        .def_property_readonly("path", &getPath)
         .def("getContext", pybind11::overload_cast<>(&BaseNode::getContext, pybind11::const_), pybind11::return_value_policy::reference)
         ;
     

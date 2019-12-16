@@ -727,7 +727,8 @@ void initBindingBaseData(pybind11::module& m)
         .def_property("value", &getDataValueAsPyObject, &setDataValueFromPyObject)
         .def_property("json", &getDataJsonAsPyObject, &setDataJsonFromPyObject)
         .def("getValueString",&BaseData::getValueString)
-        .def("getPath",&getPath)
+        .def("getPath",&getPath) // deprecated, prefer the less verbose "path" property
+        .def_property_readonly("path", &getPath)
         .def("getParent",&BaseData::getParent)
         .def("setParent", pybind11::overload_cast<const std::string&>(&BaseData::setParent) )
         .def("setParent", pybind11::overload_cast<BaseData*,const std::string&>(&BaseData::setParent), 
