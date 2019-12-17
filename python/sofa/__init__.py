@@ -32,7 +32,7 @@ def read_sofaenv_file(sofaenv_path):
             if variable == "SOFA_PRELOAD":
                 try:
                     loadPlugin(value)
-                except RuntimeError as exc:
+                except (RuntimeError, ValueError) as exc:
                     print('Could not load the %r plugin: %s' % (value, exc))
     fsofaenv.close()
 
