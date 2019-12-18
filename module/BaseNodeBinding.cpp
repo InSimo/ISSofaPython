@@ -56,6 +56,7 @@ void initBindingBaseNode(pybind11::module& m)
         .def("addChild", &BaseNode::addChild)
         .def("removeChild", &BaseNode::removeChild)
         .def("getPath", &getPath)
+        .def("getContext", pybind11::overload_cast<>(&BaseNode::getContext, pybind11::const_), pybind11::return_value_policy::reference)
         ;
     
     m.def("getNode", &internal::getNode);
