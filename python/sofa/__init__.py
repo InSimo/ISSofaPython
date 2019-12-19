@@ -1,9 +1,30 @@
-from ISSofaPython import *
-
-import __main__
 import os
 import sys
 import errno
+
+import __main__
+
+from ISSofaPython import *
+
+# Import/determine some handy global variables to make them available from everywhere
+# (especially to be able to determine the path to built binaries like runSofa).
+# The root directory of the project
+PROJECT_ROOT_DIR = None
+# Whether we are in a packaged bundle context, or in a classic development
+# environement with a build tree
+IS_PACKAGED = None
+# Directory of the binaries (where the runSofa executable resides).
+BIN_DIR = None
+try:
+    from sitecustomize import PROJECT_ROOT_DIR, IS_PACKAGED, BIN_JSON_FILE_PATH
+    if BIN_JSON_FILE_PATH:
+        import json
+        with open(BIN_JSON_FILE_PATH) as f:
+            BIN_DIR = os.path.abspath(os.path.join(PROJECT_ROOT_DIR, json.load(f)['binary_dir']))
+except Exception as err:
+    print('Error trying to update sofa.PROJECT_ROOT_DIR / IS_PACKAGED / BIN_DIR vars: %r',
+          err)
+
 
 def find_sofaenv_file():
     sofaenv_found = False
