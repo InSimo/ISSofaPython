@@ -80,18 +80,25 @@ if not IS_WIN:
     if os.path.exists(os.path.join(LIB_DIR, 'ISSofaPython.so')):
         SYS_PATH.insert(0, os.path.abspath(LIB_DIR))
 
+# Determine the project root directory
+# /!\ The PROJECT_ROOT_DIR, BIN_JSON_FILE_PATH, IS_PACKAGED variables are
+#     computed here but also imported and used in the sofa package.
+SELF_DIR = os.path.abspath(os.path.dirname(__file__))
+# Relative dir to the root of the project (when being in a build tree or
+# install tree, but won't fit the packaged version)
+PROJECT_ROOT_REL_DIR = '${PROJECT_ROOT_REL_DIR}'
+PROJECT_ROOT_DIR = os.path.abspath(os.path.join(SELF_DIR, PROJECT_ROOT_REL_DIR))
+BIN_JSON_FILE_PATH = os.path.join(PROJECT_ROOT_DIR, '.bin.json')
+if not os.path.exists(BIN_JSON_FILE_PATH):
+    BIN_JSON_FILE_PATH = None
+IS_PACKAGED = BIN_JSON_FILE_PATH is None
+if IS_PACKAGED:
+    PROJECT_ROOT_DIR = LOCAL_ENV_ROOT
+
 # Make importable some python modules or packages that are intentionally not
 # copied into the local python environment of the project
 ADDITIONAL_SYS_PATH_DIRS = '${ISSOFAPYTHON_ADDITIONAL_SYS_PATH_DIRS}'.split(';')
 if ADDITIONAL_SYS_PATH_DIRS:
-    SELF_DIR = os.path.abspath(os.path.dirname(__file__))
-    # Relative dir to the root of the project (when being in a build tree or
-    # install tree, but won't fit the packaged version)
-    PROJECT_ROOT_REL_DIR = '${PROJECT_ROOT_REL_DIR}'
-    PROJECT_ROOT_DIR = os.path.abspath(os.path.join(SELF_DIR, PROJECT_ROOT_REL_DIR))
-    IS_PACKAGED = not os.path.exists(os.path.join(PROJECT_ROOT_DIR, '.bin.json'))
-    if IS_PACKAGED:
-        PROJECT_ROOT_DIR = LOCAL_ENV_ROOT
     # Now we determined the correct root dir, let's modify sys.path
     for rel_dir in ADDITIONAL_SYS_PATH_DIRS:
         SYS_PATH.insert(0, os.path.join(PROJECT_ROOT_DIR, rel_dir))
