@@ -1,10 +1,12 @@
+"""
+This module is a wrapper of ISSofaPython, especially allowing to run scenes
+directly using the python executable instead of runSofa.
+"""
 import os
 import sys
 import errno
 
 import __main__
-
-from ISSofaPython import *
 
 # Import/determine some handy global variables to make them available from everywhere
 # (especially to be able to determine the path to built binaries like runSofa).
@@ -25,6 +27,22 @@ except Exception as err:
     print('Error trying to update sofa.PROJECT_ROOT_DIR / IS_PACKAGED / BIN_DIR vars: %r',
           err)
 
+IS_WIN = sys.platform.startswith('win')
+
+# Set the proper directory for the plugins before loading ISSofaPython
+# (even if it is not needed when using runSofa)
+if 'SOFA_PLUGIN_PATH' not in os.environ:
+    os.environ['SOFA_PLUGIN_PATH'] = (os.path.join(os.path.abspath(sys.prefix)) if IS_WIN
+                                      else os.path.join(os.path.abspath(sys.prefix), 'lib'))
+
+from ISSofaPython import (
+    AnimateBeginEvent, AnimateEndEvent, Base, BaseClass, BaseClassInfo,
+    BaseContext, BaseData, BaseLink, BaseNode, BaseObject, BaseObjectDescription,
+    CollisionBeginEvent, CollisionEndEvent, Context, DDGNode, Event, EventClass,
+    GNode, GetEventRootClass, IntegrateBeginEvent, IntegrateEndEvent,
+    KeypressedEvent, Node, ObjectFactory, PluginManager, PythonController,
+    PythonEvent, addDataPath, cleanupGraph, createNode, createRootNode, getNode,
+    getObject, getRoot, initializeGraph, loadPlugin, step)
 
 def find_sofaenv_file():
     sofaenv_found = False
@@ -32,7 +50,7 @@ def find_sofaenv_file():
 
     parent_level = 1
     reldir = '.'
-    python_dir = os.path.dirname(os.path.realpath(os.__file__))
+    python_dir = os.path.dirname(os.path.abspath(os.__file__))
     while parent_level < 4 and not sofaenv_found:
         reldir = os.path.join(reldir, '..')
         sofaenv_path = os.path.join(python_dir, reldir, "sofa.env")
