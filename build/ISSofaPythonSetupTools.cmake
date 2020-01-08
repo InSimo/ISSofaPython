@@ -73,7 +73,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
     else()
         # No embedded python on Linux for the moment (-> only a pure virtualenv)
         set(PYTHON_EXECUTABLE_RELPATH "bin/${PYTHON_EXECUTABLE_RELPATH}")
-        set(PYTHON_SITE_PACKAGES_RELPATH "lib/python2.7/site-packages")
+        set(PYTHON_SITE_PACKAGES_RELPATH "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages")
     endif()
     set(ISSOFAPYTHON_EXECUTABLE_RELPATH ${PYTHON_EXECUTABLE_RELPATH} CACHE INTERNAL "" FORCE)
     set(ISSOFAPYTHON_EXECUTABLE "${ISSOFAPYTHON_LOCAL_ENV_DIR}/${PYTHON_EXECUTABLE_RELPATH}" CACHE FILEPATH "Local python executable" FORCE)
@@ -86,11 +86,17 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
     # the entire Python which results in an improved virtual env which does not rely
     # on another Python installation (in this case the copy is done by ISExternals).
     if(NOT EMBEDDED_PYTHON AND (NOT EXISTS ${ISSOFAPYTHON_EXECUTABLE} OR ISSOFAPYTHON_VIRTUALENV_OPTIONS_CHANGED))
-        message(STATUS "Creating a Python virtualenv in ${ISSOFAPYTHON_LOCAL_ENV_DIR}")
-        # Install the 'virtualenv' package (will do nothing if existing)
-        execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install virtualenv)
+        message(STATUS "Creating a Python venv in ${ISSOFAPYTHON_LOCAL_ENV_DIR} using ${PYTHON_EXECUTABLE}")
+        if (PYTHON_VERSION_MAJOR LESS 3)
+            # Install the 'virtualenv' package (will do nothing if existing)
+            execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install virtualenv)
+            set(VIRTUALENV_PACKAGE "virtualenv")
+        else()
+            # Use 'venv' that directly comes with Python 3
+            set(VIRTUALENV_PACKAGE "venv")
+        endif()
         # Create the virtual env
-        execute_process(COMMAND ${PYTHON_EXECUTABLE} -m virtualenv ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} "${ISSOFAPYTHON_LOCAL_ENV_DIR}")
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} "${ISSOFAPYTHON_LOCAL_ENV_DIR}")
         if(NOT EXISTS ${ISSOFAPYTHON_EXECUTABLE})
             message(FATAL_ERROR "Failed to create python virtualenv executable ${ISSOFAPYTHON_EXECUTABLE}")
             return()
@@ -111,7 +117,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
                 set(ENV{PYTHONDONTWRITEBYTECODE} 1)
                 execute_process(
                     COMMAND
-                    ${PYTHON_EXECUTABLE} -m virtualenv ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} \"${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\"
+                    ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} \"${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\"
                     RESULT_VARIABLE VIRTUALENV_CREATION_RC
                 )
                 if (VIRTUALENV_CREATION_RC)
@@ -125,19 +131,24 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
     # Use a sitecustomize.py file to easily adjust the python sys.path for our project
     set(SITECUSTOMIZE_FILE "${ISSofaPython_SOURCE_DIR}/sitecustomize.py.in")
     if (WIN32)
-        set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_LOCAL_ENV_DIR}/Lib")
-        set(SITECUSTOMIZE_INSTALL_DEST_DIR "${CMAKE_INSTALL_BINDIR}/Lib")
+        set(PY_LIB_DIR "${ISSOFAPYTHON_LOCAL_ENV_DIR}/Lib")
+        set(INSTALL_PY_LIB_DIR "${CMAKE_INSTALL_BINDIR}/Lib")
     else()
-        set(SITECUSTOMIZE_DEST_DIR "${ISSOFAPYTHON_LOCAL_ENV_DIR}/lib/python2.7")
-        set(SITECUSTOMIZE_INSTALL_DEST_DIR "lib/python2.7") # hardcoding 'lib' instead of ${DEFAULT_LIB_INSTALL} because if different, python won't work.
+        set(PY_LIB_DIR "${ISSOFAPYTHON_LOCAL_ENV_DIR}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+        set(INSTALL_PY_LIB_DIR "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}") # hardcoding 'lib' instead of ${DEFAULT_LIB_INSTALL} because if different, python won't work.
     endif()
-    file(RELATIVE_PATH PROJECT_ROOT_REL_DIR ${SITECUSTOMIZE_DEST_DIR} ${PROJECT_ROOT_DIR})
-    configure_file(${SITECUSTOMIZE_FILE} ${SITECUSTOMIZE_DEST_DIR}/sitecustomize.py)
+    file(RELATIVE_PATH PROJECT_ROOT_REL_DIR ${PY_LIB_DIR} ${PROJECT_ROOT_DIR})
+    configure_file(${SITECUSTOMIZE_FILE} ${PY_LIB_DIR}/sitecustomize.py)
     # Same thing for the install version
-    file(RELATIVE_PATH PROJECT_ROOT_REL_DIR "${CMAKE_INSTALL_PREFIX}/${SITECUSTOMIZE_INSTALL_DEST_DIR}" ${PROJECT_ROOT_DIR})
+    file(RELATIVE_PATH PROJECT_ROOT_REL_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_PY_LIB_DIR}" ${PROJECT_ROOT_DIR})
     # We also put this version in the build tree, then it will be copied into the install tree at install time
-    configure_file(${SITECUSTOMIZE_FILE} ${SITECUSTOMIZE_DEST_DIR}/sitecustomize-install.py)
-    install(FILES ${SITECUSTOMIZE_DEST_DIR}/sitecustomize-install.py DESTINATION ${SITECUSTOMIZE_INSTALL_DEST_DIR} RENAME sitecustomize.py)
+    configure_file(${SITECUSTOMIZE_FILE} ${PY_LIB_DIR}/sitecustomize-install.py)
+    install(FILES ${PY_LIB_DIR}/sitecustomize-install.py DESTINATION ${INSTALL_PY_LIB_DIR} RENAME sitecustomize.py)
+    # Copy _is_prepare_env.pth and _is_prepare_env.py to ensure our sitecustomize.py will be imported
+    configure_file(${ISSofaPython_SOURCE_DIR}/_is_prepare_env.pth ${PY_LIB_DIR}/site-packages COPYONLY)
+    install(FILES ${PY_LIB_DIR}/site-packages/_is_prepare_env.pth DESTINATION ${INSTALL_PY_LIB_DIR}/site-packages)
+    configure_file(${ISSofaPython_SOURCE_DIR}/_is_prepare_env.py ${PY_LIB_DIR}/site-packages COPYONLY)
+    install(FILES ${PY_LIB_DIR}/site-packages/_is_prepare_env.py DESTINATION ${INSTALL_PY_LIB_DIR}/site-packages)
 
     target_compile_definitions(ISSofaPythonPlugin PRIVATE "ISSOFAPYTHON_USE_LOCAL_ENV=\"${ISSOFAPYTHON_USE_LOCAL_ENV}\"")
 

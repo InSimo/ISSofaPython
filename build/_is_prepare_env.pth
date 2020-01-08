@@ -1,0 +1,13 @@
+# See the official doc of the 'site' module to understand when .pth files are
+# read/executed.
+
+# In case we are not in a fully isolated python environment (ie. we are using a
+# virtual env) we want to make sure our custom sitecustomize.py module can be
+# imported, and not a potential one already existing in the system python installation.
+# The site-packages dir of the virtual env is automatically added to sys.path,
+# but it is not put at the beginning of the list, making the system installation
+# modules/packages directories more prioritaries by default.
+# The trick is to import a custom local module that has no chances to exist elsewhere,
+# that will put the local site-packages and its parent dir at the beginning of
+# sys.path (we don't do it directly here because .pth files are very limited).
+import _is_prepare_env  # See the local site-packages/_is_prepare_env.py

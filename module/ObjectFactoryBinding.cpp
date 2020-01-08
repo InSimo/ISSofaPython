@@ -142,7 +142,15 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
         you need to call PyCode_Addr2Line().
         */
         int line = PyCode_Addr2Line(frame->f_code, frame->f_lasti);
-        const char *filename = PyString_AsString(frame->f_code->co_filename);
+        const char *filename = nullptr;
+        // https://stackoverflow.com/questions/22487780/what-do-i-use-instead-of-pystring-asstring-when-loading-a-python-module-in-3-3
+        if (PyUnicode_Check(frame->f_code->co_filename)) {
+            PyObject* tempBytes = PyUnicode_AsEncodedString(frame->f_code->co_filename, "UTF-8", "strict");
+            filename = PYBIND11_BYTES_AS_STRING(tempBytes);
+            Py_DECREF(tempBytes);
+        } else if (PyBytes_Check(frame->f_code->co_filename)) {
+            filename = PYBIND11_BYTES_AS_STRING(frame->f_code->co_filename);
+        }
         //const char *funcname = PyString_AsString(frame->f_code->co_name);
         //printf("    %s(%d): %s\n", filename, line, funcname);
         //frame = frame->f_back;

@@ -77,7 +77,9 @@ if not IS_WIN:
     # in the C++ code, sys.prefix should be the absolute root path of the
     # python env of the project.
     LIB_DIR = os.path.join(sys.prefix, 'lib')
-    if os.path.exists(os.path.join(LIB_DIR, 'ISSofaPython.so')):
+    # (not directly testing the presence of 'ISSofaPython.so' because since Python 3
+    # it is named like 'ISSofaPython.cpython-38-x86_64-linux-gnu.so')
+    if os.path.exists(os.path.join(LIB_DIR, 'libISSofaPythonPlugin.so')):
         SYS_PATH.insert(0, os.path.abspath(LIB_DIR))
 
 # Determine the project root directory

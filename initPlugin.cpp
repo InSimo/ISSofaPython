@@ -92,18 +92,22 @@ void initExternalModule()
     // python libs, and is also used as a landmark since Python 3.
 #ifdef WIN32
     #define PYLIB_LANDMARK_OS_PY "Lib/os.py"
+    #define PYLIB_LANDMARK_SITE_PACKAGES "Lib/site-packages"
     #define PYLIB_LANDMARK_ZIP "python" sofa_tostring(PY_MAJOR_VERSION) sofa_tostring(PY_MINOR_VERSION) ".zip"
 #else
     #define PYLIB_LANDMARK_OS_PY "lib/python" sofa_tostring(PY_MAJOR_VERSION) "." sofa_tostring(PY_MINOR_VERSION) "/os.py"
+    #define PYLIB_LANDMARK_SITE_PACKAGES "lib/python" sofa_tostring(PY_MAJOR_VERSION) "." sofa_tostring(PY_MINOR_VERSION) "/site-packages"
     #define PYLIB_LANDMARK_ZIP "lib/python" sofa_tostring(PY_MAJOR_VERSION) sofa_tostring(PY_MINOR_VERSION) ".zip"
 #endif
 
     if (doesPythonModuleExist(processeExeDir + "/" PYLIB_LANDMARK_OS_PY)
+        || sofa::helper::system::FileSystem::exists(processeExeDir + "/" PYLIB_LANDMARK_SITE_PACKAGES)
         || sofa::helper::system::FileSystem::exists(processeExeDir + "/" PYLIB_LANDMARK_ZIP))
     {
         pythonHome = processeExeDir;
     }
     else if (doesPythonModuleExist(processeExeDir + "/../" PYLIB_LANDMARK_OS_PY)
+        || sofa::helper::system::FileSystem::exists(processeExeDir + "/../" PYLIB_LANDMARK_SITE_PACKAGES)
         || sofa::helper::system::FileSystem::exists(processeExeDir + "/../" PYLIB_LANDMARK_ZIP))
     {
         pythonHome = processeExeDir + "/..";
@@ -111,8 +115,19 @@ void initExternalModule()
 
     if (!pythonHome.empty())
     {
+// Py_SetPythonHome does not work with Python 3.8.1, but Py_SetProgramName
+// works better (there are issues related to that on internet)
+// #define SET_PYTHON_HOME
+#ifdef SET_PYTHON_HOME
         std::cout << "ISSofaPython: setting the Python home to " << pythonHome << std::endl;
-        Py_SetPythonHome(const_cast<char*>(pythonHome.c_str()));
+        static std::wstring pythonHome_w = std::wstring(pythonHome.begin(), pythonHome.end());
+        Py_SetPythonHome(const_cast<wchar_t*>(pythonHome_w.c_str()));
+#else
+        std::string pythonProgramName = processeExeDir + "/python";
+        std::cout << "ISSofaPython: setting the Python program name to " << pythonProgramName << std::endl;
+        static std::wstring pythonProgramName_w = std::wstring(pythonProgramName.begin(), pythonProgramName.end());
+        Py_SetProgramName(const_cast<wchar_t*>(pythonProgramName_w.c_str()));
+#endif
     }
     else
     {
