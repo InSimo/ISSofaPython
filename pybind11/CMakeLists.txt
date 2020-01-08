@@ -38,6 +38,8 @@ set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} CACHE INTERNAL "")
 set(PYTHON_LIBRARIES ${PYTHON_LIBRARIES} CACHE INTERNAL "")
 set(PYTHON_MODULE_PREFIX ${PYTHON_MODULE_PREFIX} CACHE INTERNAL "")
 set(PYTHON_MODULE_EXTENSION ${PYTHON_MODULE_EXTENSION} CACHE INTERNAL "")
+set(PYTHON_VERSION_MAJOR ${PYTHON_VERSION_MAJOR} CACHE INTERNAL "")
+set(PYTHON_VERSION_MINOR ${PYTHON_VERSION_MINOR} CACHE INTERNAL "")
 
 # NB: when adding a header don't forget to also add it to setup.py
 set(PYBIND11_HEADERS
@@ -116,28 +118,25 @@ if(NOT (CMAKE_VERSION VERSION_LESS 3.0))  # CMake >= 3.0
   add_library(pybind11::embed ALIAS embed)
   target_link_libraries(embed INTERFACE pybind11::pybind11 $<BUILD_INTERFACE:${PYTHON_LIBRARIES}>)
 endif()
-  
+
 if (PYBIND11_INSTALL)
   install(DIRECTORY ${PYBIND11_INCLUDE_DIR}/pybind11 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-  
-  set(PYBIND11_CMAKECONFIG_BUILD_DIR "${CMAKE_BINARY_DIR}/${PROJECT_NAME}")
   # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
   set(PYBIND11_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for pybind11Config.cmake")
+
   configure_package_config_file(tools/${PROJECT_NAME}Config.cmake.in
-                                "${PYBIND11_CMAKECONFIG_BUILD_DIR}/${PROJECT_NAME}Config.cmake"
+                                "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                                 INSTALL_DESTINATION ${PYBIND11_CMAKECONFIG_INSTALL_DIR})
-  file(COPY tools/FindPythonLibsNew.cmake tools/pybind11Tools.cmake
-       DESTINATION ${PYBIND11_CMAKECONFIG_BUILD_DIR} )
   # Remove CMAKE_SIZEOF_VOID_P from ConfigVersion.cmake since the library does
   # not depend on architecture specific settings or libraries.
   set(_PYBIND11_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
   unset(CMAKE_SIZEOF_VOID_P)
-  write_basic_package_version_file(${PYBIND11_CMAKECONFIG_BUILD_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+  write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
                                    VERSION ${${PROJECT_NAME}_VERSION}
                                    COMPATIBILITY AnyNewerVersion)
   set(CMAKE_SIZEOF_VOID_P ${_PYBIND11_CMAKE_SIZEOF_VOID_P})
-  install(FILES ${PYBIND11_CMAKECONFIG_BUILD_DIR}/${PROJECT_NAME}Config.cmake
-                ${PYBIND11_CMAKECONFIG_BUILD_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
                 tools/FindPythonLibsNew.cmake
                 tools/pybind11Tools.cmake
           DESTINATION ${PYBIND11_CMAKECONFIG_INSTALL_DIR})
@@ -149,9 +148,10 @@ if (PYBIND11_INSTALL)
 
     install(TARGETS pybind11 module embed
             EXPORT "${PYBIND11_EXPORT_NAME}")
-    install(EXPORT "${PYBIND11_EXPORT_NAME}"
-            NAMESPACE "${PROJECT_NAME}::"
-            DESTINATION ${PYBIND11_CMAKECONFIG_INSTALL_DIR})
-
+    if(PYBIND11_MASTER_PROJECT)
+      install(EXPORT "${PYBIND11_EXPORT_NAME}"
+              NAMESPACE "${PROJECT_NAME}::"
+              DESTINATION ${PYBIND11_CMAKECONFIG_INSTALL_DIR})
+    endif()
   endif()
 endif()
