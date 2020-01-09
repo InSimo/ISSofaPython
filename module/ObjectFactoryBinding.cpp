@@ -97,7 +97,8 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
                 oss << ", ";
             }
         }
-        throw SofaAttributeError(obj.get(), "unused attribute(s) : \"" + oss.str() + "\"");
+        // throw SofaAttributeError(obj.get(), "unused attribute(s) : \"" + oss.str() + "\"");
+        std::cerr << "WARNING: unused attribute(s): " << oss.str() << std::endl;
     }
 
     pybind11::dict dict(kwargs);
@@ -125,7 +126,8 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
             }
             else
             {
-                throw SofaAttributeError(obj.get(), "unused attribute: \"" + attr + "\"");
+                // throw SofaAttributeError(obj.get(), "unused attribute: \"" + attr + "\"");
+                std::cerr << "WARNING: unused attribute: " << attr << std::endl;
             }
         }
     }
