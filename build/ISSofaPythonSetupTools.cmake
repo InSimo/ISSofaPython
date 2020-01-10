@@ -57,7 +57,10 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
             set(ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR "\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" CACHE INTERNAL "")
         else()
             # On Linux things are split between bin and lib
-            set(ISSOFAPYTHON_LOCAL_ENV_DIR ${CMAKE_BINARY_DIR} CACHE INTERNAL "")
+            # In case we have simlinks, let's resolve them, as otherwise it can cause issues especially when installing a
+            # virtual env with Python 3
+            get_filename_component(CMAKE_BINARY_DIR_REALPATH ${CMAKE_BINARY_DIR} REALPATH)
+            set(ISSOFAPYTHON_LOCAL_ENV_DIR ${CMAKE_BINARY_DIR_REALPATH} CACHE INTERNAL "")
             set(ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR "\${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "")
         endif()
     endif()
@@ -77,6 +80,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
     endif()
     set(ISSOFAPYTHON_EXECUTABLE_RELPATH ${PYTHON_EXECUTABLE_RELPATH} CACHE INTERNAL "" FORCE)
     set(ISSOFAPYTHON_EXECUTABLE "${ISSOFAPYTHON_LOCAL_ENV_DIR}/${PYTHON_EXECUTABLE_RELPATH}" CACHE FILEPATH "Local python executable" FORCE)
+    message(STATUS "ISSOFAPYTHON_EXECUTABLE=${ISSOFAPYTHON_EXECUTABLE}")
     set(ISSOFAPYTHON_SITE_PACKAGES_RELPATH "${PYTHON_SITE_PACKAGES_RELPATH}" CACHE INTERNAL "" FORCE)
     set(ISSOFAPYTHON_PIP_INSTALL_OPTIONS_ALL "${ISSOFAPYTHON_PIP_INSTALL_OPTIONS}" CACHE STRING "" FORCE)
 
@@ -85,7 +89,20 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
     # When fully embedding Python, no need to create a virtual env: instead we copy
     # the entire Python which results in an improved virtual env which does not rely
     # on another Python installation (in this case the copy is done by ISExternals).
-    if(NOT EMBEDDED_PYTHON AND (NOT EXISTS ${ISSOFAPYTHON_EXECUTABLE} OR ISSOFAPYTHON_VIRTUALENV_OPTIONS_CHANGED))
+    if(NOT EMBEDDED_PYTHON)
+        if (NOT WIN32)  # We create a virtual env only on Linux, but let's still do the test
+            # Remove some files of the existing virtual env if any, that could cause issues when re-creating a virtual env
+            set(_bin_dir ${ISSOFAPYTHON_LOCAL_ENV_DIR}/bin)
+            file(GLOB _FILES_TO_RM ${_bin_dir}/python* ${_bin_dir}/activate* ${ISSOFAPYTHON_LOCAL_ENV_DIR}/bin/Activate* ${_bin_dir}/pip* ${_bin_dir}/easy_install* ${_bin_dir}/f2py* ${_bin_dir}/py* ${ISSOFAPYTHON_LOCAL_ENV_DIR}/bin/wheel*)
+            if (_FILES_TO_RM)
+                file(REMOVE_RECURSE ${_FILES_TO_RM})
+            endif()
+            file(GLOB _FILES_TO_RM ${ISSOFAPYTHON_LOCAL_ENV_DIR}/lib/python*)
+            if (_FILES_TO_RM)
+                file(REMOVE_RECURSE ${_FILES_TO_RM})
+            endif()
+        endif()
+
         message(STATUS "Creating a Python venv in ${ISSOFAPYTHON_LOCAL_ENV_DIR} using ${PYTHON_EXECUTABLE}")
         if (PYTHON_VERSION_MAJOR LESS 3)
             # Install the 'virtualenv' package (will do nothing if existing)
@@ -96,10 +113,18 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
             set(VIRTUALENV_PACKAGE "venv")
         endif()
         # Create the virtual env
-        execute_process(COMMAND ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} "${ISSOFAPYTHON_LOCAL_ENV_DIR}")
+        execute_process(
+            COMMAND
+            ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} "${ISSOFAPYTHON_LOCAL_ENV_DIR}"
+            RESULT_VARIABLE CMD_RC)
+        if (CMD_RC)
+            message(FATAL_ERROR "Failed to create the Python virtual env: error ${CMD_RC}")
+        endif()
         if(NOT EXISTS ${ISSOFAPYTHON_EXECUTABLE})
-            message(FATAL_ERROR "Failed to create python virtualenv executable ${ISSOFAPYTHON_EXECUTABLE}")
+            message(FATAL_ERROR "Failed to create the Python virtual env: ${ISSOFAPYTHON_EXECUTABLE} does not exist")
             return()
+        else()
+            message(STATUS "The virtual env was created")
         endif()
     endif()
 

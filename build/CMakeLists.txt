@@ -111,6 +111,9 @@ target_compile_definitions(ISSofaPythonPlugin PRIVATE "SOFA_BUILD_ISSOFAPYTHONPL
 # This code find its SONAME using readelf
 message(STATUS "Getting python library SONAME")
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
+    message(STATUS "PYTHON_LIBRARIES=${PYTHON_LIBRARIES}")
+    message(STATUS "PYTHON_LIBRARY=${PYTHON_LIBRARY}")
+    message(STATUS "Python_LIBRARIES=${Python_LIBRARIES}")
     if (PYTHON_LIBRARIES)
         execute_process(COMMAND bash -c "readelf -d ${PYTHON_LIBRARIES} | awk '$2==\"(SONAME)\" { print substr(\$5,2,length(\$5)-2) }'"
             RESULT_VARIABLE SONAME_ERRORCODE
