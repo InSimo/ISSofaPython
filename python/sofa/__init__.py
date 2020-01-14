@@ -48,13 +48,13 @@ def find_sofaenv_file():
     sofaenv_found = False
     sofaenv_path = None
 
-    parent_level = 1
+    parent_level = 0
     reldir = '.'
     python_dir = os.path.dirname(os.path.abspath(os.__file__))
     while parent_level < 4 and not sofaenv_found:
-        reldir = os.path.join(reldir, '..')
         sofaenv_path = os.path.join(python_dir, reldir, "sofa.env")
         sofaenv_found = os.path.exists(sofaenv_path)
+        reldir = os.path.join(reldir, '..')
         parent_level += 1
 
     if sofaenv_path is None:
