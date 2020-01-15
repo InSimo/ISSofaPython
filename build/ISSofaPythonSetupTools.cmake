@@ -248,7 +248,7 @@ function(issofapython_add_package)
                 RESULT_VARIABLE PIP_INSTALL_RC
             )
             if(PIP_INSTALL_RC)
-                message(FATAL_ERROR \"pip install failed\")
+                message(FATAL_ERROR \"pip install failed with error '\${PIP_INSTALL_RC}'\")
             endif()
             message(STATUS \"Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip [step 2: install dependencies]\")
             execute_process(
@@ -258,7 +258,7 @@ function(issofapython_add_package)
                 RESULT_VARIABLE PIP_INSTALL_RC
             )
             if(PIP_INSTALL_RC)
-                message(FATAL_ERROR \"pip install failed\")
+                message(FATAL_ERROR \"pip install failed with error '\${PIP_INSTALL_RC}'\")
             endif()
             "
         )
@@ -292,7 +292,7 @@ function(issofapython_install_requirements requirements_file_path)
                 RESULT_VARIABLE PIP_INSTALL_RC
             )
             if(PIP_INSTALL_RC)
-                message(FATAL_ERROR \"pip install failed\")
+                message(FATAL_ERROR \"pip install failed with error '\${PIP_INSTALL_RC}'\")
             endif()
             "
         )
