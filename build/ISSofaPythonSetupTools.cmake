@@ -115,7 +115,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
         # Create the virtual env
         execute_process(
             COMMAND
-            ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} "${ISSOFAPYTHON_LOCAL_ENV_DIR}"
+            ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} --copies "${ISSOFAPYTHON_LOCAL_ENV_DIR}"
             RESULT_VARIABLE CMD_RC)
         if (CMD_RC)
             message(FATAL_ERROR "Failed to create the Python virtual env: error ${CMD_RC}")
@@ -142,7 +142,7 @@ if(ISSOFAPYTHON_USE_LOCAL_ENV)
                 set(ENV{PYTHONDONTWRITEBYTECODE} 1)
                 execute_process(
                     COMMAND
-                    ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} ${ISSOFAPYTHON_VIRTUALENV_OPTIONS} \"${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\"
+                    ${PYTHON_EXECUTABLE} -m ${VIRTUALENV_PACKAGE} --copies \"${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}\"
                     RESULT_VARIABLE VIRTUALENV_CREATION_RC
                 )
                 if (VIRTUALENV_CREATION_RC)
