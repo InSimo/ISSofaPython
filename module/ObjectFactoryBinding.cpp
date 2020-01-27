@@ -97,8 +97,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
                 oss << ", ";
             }
         }
-        // throw SofaAttributeError(obj.get(), "unused attribute(s) : \"" + oss.str() + "\"");
-        std::cerr << "WARNING: unused attribute(s): " << oss.str() << std::endl;
+        throw SofaAttributeError(obj.get(), "unused attribute(s) : \"" + oss.str() + "\"");
     }
 
     pybind11::dict dict(kwargs);
@@ -112,23 +111,17 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
         {
             pybind11::object value = pybind11::reinterpret_borrow<pybind11::object>(item.second);
 
+            // We allow passing python none objects only in the createObject method, in which case assignemt is simply ignored.
+            if (value.is_none()) continue;
+
             // it can only be a data, since links are initialized from strings, which are taken care of by BaseObjectDescription.
             BaseData* data   = obj->findData(attr); 
             if (data)
             {
-                // We allow passing python none objects only in the createObject method, in which case assignemt is simply ignored. 
-                if (value.is_none())
-                {
-                    continue;
-                }
                 // will throw invalid_argument if the python object cannot be converted to something compatible with the data type
                 setDataValueFromPyObject(data, value);
             }
-            else
-            {
-                // throw SofaAttributeError(obj.get(), "unused attribute: \"" + attr + "\"");
-                std::cerr << "WARNING: unused attribute: " << attr << std::endl;
-            }
+            else throw SofaAttributeError(obj.get(), "unused attribute: \"" + attr + "\"");
         }
     }
 
