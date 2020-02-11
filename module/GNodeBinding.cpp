@@ -87,6 +87,7 @@ void initBindingGNode(pybind11::module& m)
          .def("getChildren", &internal::getChildren)
          .def("getPathName", &Node::getPathName)
          .def("detachFromGraph", &Node::detachFromGraph)
+         .def("init", [](GNode* instance) { instance->init(sofa::core::ExecParams::defaultInstance()); } )
          ;
 
     m.def("createRootNode", &internal::createRootNode);
