@@ -41,7 +41,7 @@ pybind11::object getAttr(Base* self, const std::string& attr)
     else
     {
         pybind11::object pySelf = pybind11::cast(self);
-        return pySelf.attr("__dict__")[attr.c_str()];
+        return pySelf.attr("__getattribute__")(attr.c_str());
     }
 }
 
