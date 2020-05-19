@@ -120,13 +120,21 @@ void initExternalModule()
 // #define SET_PYTHON_HOME
 #ifdef SET_PYTHON_HOME
         std::cout << "ISSofaPython: setting the Python home to " << pythonHome << std::endl;
+#if PY_MAJOR_VERSION >= 3
         static std::wstring pythonHome_w = std::wstring(pythonHome.begin(), pythonHome.end());
         Py_SetPythonHome(const_cast<wchar_t*>(pythonHome_w.c_str()));
 #else
+        Py_SetPythonHome(const_cast<wchar_t*>(pythonHome.c_str()));
+#endif
+#else
         std::string pythonProgramName = processeExeDir + "/python";
         std::cout << "ISSofaPython: setting the Python program name to " << pythonProgramName << std::endl;
+#if PY_MAJOR_VERSION >= 3
         static std::wstring pythonProgramName_w = std::wstring(pythonProgramName.begin(), pythonProgramName.end());
         Py_SetProgramName(const_cast<wchar_t*>(pythonProgramName_w.c_str()));
+#else
+        Py_SetProgramName(const_cast<char*>(pythonProgramName.c_str()));
+#endif
 #endif
     }
     else
