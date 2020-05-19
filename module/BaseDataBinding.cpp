@@ -574,7 +574,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
     else if (typeInfo->IsContainer())
     {
         const AbstractContainerTypeInfo* containerTypeInfo = typeInfo->ContainerType();
-        std::size_t containerSize = containerTypeInfo->containerSize(dataPtr);
+        //std::size_t containerSize = containerTypeInfo->containerSize(dataPtr);
         pybind11::list pyList;
         auto itData = containerTypeInfo->cbegin(dataPtr);
         while (itData != containerTypeInfo->cend(dataPtr))
