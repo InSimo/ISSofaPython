@@ -148,10 +148,8 @@ if (PYBIND11_INSTALL)
 
     install(TARGETS pybind11 module embed
             EXPORT "${PYBIND11_EXPORT_NAME}")
-    if(PYBIND11_MASTER_PROJECT)
-      install(EXPORT "${PYBIND11_EXPORT_NAME}"
-              NAMESPACE "${PROJECT_NAME}::"
-              DESTINATION ${PYBIND11_CMAKECONFIG_INSTALL_DIR})
-    endif()
+    install(EXPORT "${PYBIND11_EXPORT_NAME}"
+            NAMESPACE "${PROJECT_NAME}::"
+            DESTINATION ${PYBIND11_CMAKECONFIG_INSTALL_DIR})
   endif()
 endif()
