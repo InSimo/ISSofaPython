@@ -236,7 +236,7 @@ function(issofapython_add_package)
         #   the dependencies were reinstalled, at least when we don't specify versions.
         #   (another solution could be to remove the site-packages/<main-package-name>
         #   folder before doing a single "pip install")
-        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -s -m pip install")
+        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_EXECUTABLE} -s -m pip install")
         set(PIP_INSTALL_DIR "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_SITE_PACKAGES_RELPATH}")
         install(CODE "
             message(STATUS \"Installing ${PROJECT_PYTHON_SETUPTOOLSFILE} with pip [step 1: force upgrade, without dependencies]\")
@@ -281,7 +281,7 @@ function(issofapython_install_requirements requirements_file_path)
     # Using the python -s option to force installing packages in the local site-packages
     # dir of the project instead of potentially using the user site dir.
     if (ISSOFAPYTHON_USE_LOCAL_ENV)
-        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_EXECUTABLE_RELPATH} -s -m pip install")
+        set(PIP_INSTALL_CMD "${ISSOFAPYTHON_EXECUTABLE} -s -m pip install")
         set(PIP_INSTALL_DIR "${ISSOFAPYTHON_LOCAL_ENV_INSTALL_DIR}/${ISSOFAPYTHON_SITE_PACKAGES_RELPATH}")
         install(CODE "
             message(STATUS \"Installing ${requirements_file_path} with pip\")
@@ -292,7 +292,7 @@ function(issofapython_install_requirements requirements_file_path)
                 RESULT_VARIABLE PIP_INSTALL_RC
             )
             if(PIP_INSTALL_RC)
-                message(FATAL_ERROR \"pip install failed with error '\${PIP_INSTALL_RC}'\")
+                message(FATAL_ERROR \" ${PIP_INSTALL_CMD} -r ${requirements_file_path} -t ${PIP_INSTALL_DIR} --disable-pip-version-check'\ failed with error '\${PIP_INSTALL_RC}'\")
             endif()
             "
         )
