@@ -22,7 +22,14 @@ option(ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY "Allow the generation of cached 
 get_filename_component(ISSOFAPYTHON_ACTUAL_SOURCE_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
 set(PYBIND11_INSTALL ON CACHE BOOL "Install pybind11 header files?" FORCE)
-add_subdirectory(${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11 )
+add_subdirectory(${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/pybind11 ${CMAKE_BINARY_DIR}/pybind11 )
+
+# pytbind11 pybind11Tools (build) tree 
+configure_file( ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/pybind11/tools/pybind11Tools.cmake 
+                ${CMAKE_BINARY_DIR}/pybind11/pybind11Tools.cmake COPYONLY)
+# pytbind11 FindPythonLibsNew (build) tree
+configure_file( ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/pybind11/tools/FindPythonLibsNew.cmake 
+                ${CMAKE_BINARY_DIR}/pybind11/FindPythonLibsNew.cmake COPYONLY)
 
 if( NOT TARGET SofaSimulationCommon )
     find_package(SofaSimulation REQUIRED)
