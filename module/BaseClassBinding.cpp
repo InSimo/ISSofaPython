@@ -17,7 +17,7 @@ using sofa::core::objectmodel::BaseClass;
 
 void initBindingBaseClassInfo(pybind11::module& m)
 {
-    using BaseClassInfo  = sofa::core::objectmodel::BaseClassInfo;
+    using BaseClassInfo  = sofa::defaulttype::BaseClassInfo;
     pybind11::class_<BaseClassInfo,
                     std::unique_ptr<BaseClassInfo, pybind11::nodelete> >(m, "BaseClassInfo")
         .def_readonly("fullTypeName", &BaseClassInfo::fullTypeName)

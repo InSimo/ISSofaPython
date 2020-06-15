@@ -9,7 +9,6 @@
 
 #include <pybind11/pybind11.h>
 #include <sofa/core/objectmodel/Event.h>
-#include <sofa/core/objectmodel/BaseClass.h>
 
 namespace sofa
 {
@@ -23,7 +22,7 @@ template <class TSofaEvent>
 class PyBaseEvent : public TSofaEvent
 {
 public:
-    typedef sofa::core::objectmodel::BaseRootClass<sofa::core::objectmodel::Event> EventClass;
+    typedef sofa::defaulttype::BaseRootClass<sofa::core::objectmodel::Event> EventClass;
 
     using TSofaEvent::TSofaEvent;
 
@@ -42,7 +41,7 @@ template <class TSofaEvent>
 class PyEvent : public PyBaseEvent<TSofaEvent>
 {
 public:
-    typedef sofa::core::objectmodel::BaseRootClass<sofa::core::objectmodel::Event> EventClass;
+    typedef sofa::defaulttype::BaseRootClass<sofa::core::objectmodel::Event> EventClass;
 
     using PyBaseEvent<TSofaEvent>::PyBaseEvent;
 

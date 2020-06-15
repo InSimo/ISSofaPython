@@ -10,7 +10,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/iostream.h>
-#include <sofa/core/objectmodel/BaseClass.h>
+#include <sofa/defaulttype/BaseClass.h>
 
 namespace sofa
 {
@@ -26,8 +26,8 @@ void initBindingEventClass(pybind11::module& m);
 template< typename TRootType > 
 void initBindingBaseRootClass(pybind11::module& m, const std::string& typeName )
 {
-    using TBaseRootClass = sofa::core::objectmodel::BaseRootClass<TRootType>;
-    using BaseClassInfo  = sofa::core::objectmodel::BaseClassInfo;
+    using TBaseRootClass = sofa::defaulttype::BaseRootClass<TRootType>;
+    using BaseClassInfo  = sofa::defaulttype::BaseClassInfo;
 
     pybind11::class_<TBaseRootClass, BaseClassInfo,
         std::unique_ptr<TBaseRootClass, pybind11::nodelete> >(m, typeName.c_str())

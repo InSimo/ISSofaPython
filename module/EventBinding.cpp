@@ -58,7 +58,7 @@ void initBindingEvent(pybind11::module& m)
          .def("getKey", &KeypressedEvent::getKey)
          ;
 
-    m.def("GetEventRootClass", []() -> const sofa::core::objectmodel::BaseRootClass<Event>* { return Event::GetClass();  });
+    m.def("GetEventRootClass", []() -> const sofa::defaulttype::BaseRootClass<Event>* { return Event::GetClass();  });
 }
 
 }
