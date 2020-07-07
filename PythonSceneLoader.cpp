@@ -6,12 +6,8 @@
 
 #include "PythonSceneLoader.h"
 #include <sofa/helper/system/SetDirectory.h>
-#include <sofa/helper/system/DynamicLibrary.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
-#ifdef PYTHON_LIBRARY_SONAME
-#include <dlfcn.h>
-#endif
 #include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
 #include <pybind11/eval.h>
 
@@ -36,11 +32,6 @@ using sofa::simulation::SceneLoader;
 
 PythonSceneLoader::PythonSceneLoader()
 {
-    // On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
-#ifdef PYTHON_LIBRARY_SONAME
-    std::cout << "ISSofaPython: loading python library: " << PYTHON_LIBRARY_SONAME << std::endl;
-    sofa::helper::system::DynamicLibrary::DynamicLibrary::load(PYTHON_LIBRARY_SONAME, true);
-#endif
     auto sys = pybind11::module::import("sys");
     std::vector<std::string> localPath;
 #ifdef _WIN32

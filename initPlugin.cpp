@@ -10,6 +10,10 @@
 #include <sofa/helper/system/SetDirectory.h>
 #include <sofa/helper/system/FileSystem.h>
 #include "PythonSceneLoader.h"
+#ifdef PYTHON_LIBRARY_SONAME
+#include <sofa/helper/system/DynamicLibrary.h>
+#include <dlfcn.h>
+#endif
 
 // Not including <Python.h> here because the include of <pybind11/embed.h>
 // does it, and pybind also ensures there is no trouble when doing a debug build
@@ -53,6 +57,11 @@ void initExternalModule()
         return;
     }
 
+    // On Linux when using a virtualenv, native libraries such as used by numpy fail to load unless the python library is manually loaded
+#ifdef PYTHON_LIBRARY_SONAME
+    std::cout << "ISSofaPython: manually load the python library shared object (required for ubuntu) : " << PYTHON_LIBRARY_SONAME << std::endl;
+    sofa::helper::system::DynamicLibrary::DynamicLibrary::load(PYTHON_LIBRARY_SONAME, true);
+#endif
     // Let's initialize the Python interpreter, possibly using the local env
     // (full python ditribution, or virtualenv) by setting the appropriate Python home dir.
 
