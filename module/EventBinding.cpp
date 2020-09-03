@@ -13,6 +13,7 @@
 #include <sofa/simulation/common/IntegrateBeginEvent.h>
 #include <sofa/simulation/common/IntegrateEndEvent.h>
 #include <sofa/core/objectmodel/KeypressedEvent.h>
+#include <sofa/simulation/common/ScriptEvent.h>
 
 namespace sofa
 {
@@ -27,6 +28,15 @@ using sofa::simulation::CollisionEndEvent;
 using sofa::simulation::IntegrateBeginEvent;
 using sofa::simulation::IntegrateEndEvent;
 using sofa::core::objectmodel::KeypressedEvent;
+using sofa::simulation::ScriptEvent;
+
+namespace internal
+{
+    sofa::simulation::Node* getSender(ScriptEvent* event)
+    {
+        return event->getSender().get();
+    }
+}
 
 void initBindingEvent(pybind11::module& m)
 {
@@ -57,8 +67,14 @@ void initBindingEvent(pybind11::module& m)
          .def(pybind11::init<char>())
          .def("getKey", &KeypressedEvent::getKey)
          ;
+    pybind11::class_<ScriptEvent, Event, PyEvent<ScriptEvent> >(m, "ScriptEvent")
+         .def("getSender", &internal::getSender)
+         .def("getEventName", &ScriptEvent::getEventName)
+         .def("getEventString", &ScriptEvent::getEventString)
+         ;
 
     m.def("GetEventRootClass", []() -> const sofa::defaulttype::BaseRootClass<Event>* { return Event::GetClass();  });
+
 }
 
 }
