@@ -47,15 +47,18 @@ public:
     SOFA_CLASS(PythonController, sofa::core::objectmodel::BaseObject);
 
     using SofaEvent = sofa::core::objectmodel::Event;
+    void init() override;
 
     void handleEvent(sofa::core::objectmodel::Event* ) override;
 
     void cleanup() override;
 
     typedef std::function<void(SofaEvent*)> HandleEventCallback;
+    typedef std::function<void()> HandleVoidCallback;
 
     void addCallback(const sofa::core::objectmodel::Event*, const HandleEventCallback& callback);
     void addCallback(const std::string& className, const HandleEventCallback& callback);
+    void addInitCallback(const HandleVoidCallback& callback);
     void removeCallback(const sofa::core::objectmodel::Event* e);
     void removeCallback(const std::string& className);
 
@@ -65,6 +68,7 @@ protected:
     virtual ~PythonController();
 
     std::unordered_map< std::string, HandleEventCallback> m_callbackMap;
+    HandleVoidCallback m_initCallback = nullptr;
 
 };
 

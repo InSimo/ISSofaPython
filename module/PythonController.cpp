@@ -63,6 +63,24 @@ PythonController::~PythonController()
 
 }
 
+void PythonController::init()
+{
+    if (m_initCallback)
+    {
+        try
+        {
+            pybind11::gil_scoped_acquire acquire;
+            m_initCallback();
+        }
+        catch (const pybind11::error_already_set& e)
+        {
+            serr << "PythonController: Python exception in init callback:\n" << sendl;
+        }
+       
+    }
+}
+
+
 void PythonController::handleEvent(SofaEvent* e)
 {
     auto it = m_callbackMap.find(std::string(e->getClassName()));
@@ -101,6 +119,11 @@ void PythonController::addCallback(const std::string& className, const HandleEve
     m_callbackMap[className] = callback;
 }
 
+void PythonController::addInitCallback(const HandleVoidCallback& callback)
+{
+    m_initCallback = callback;
+}
+
 void PythonController::removeCallback(const sofa::core::objectmodel::Event* e)
 {
     m_callbackMap.erase(std::string(e->getClassName()));
@@ -117,11 +140,13 @@ void initBindingPythonController(pybind11::module& m)
     using sofa::core::objectmodel::New;
     using sofa::python::PythonController;
     using HandleEventCallback = PythonController::HandleEventCallback;
+    using HandleVoidCallback = PythonController::HandleVoidCallback;
 
     pybind11::class_<PythonController, BaseObject,
         PySofaBaseObject<PythonController>, // trampoline "alias" class 
         sofa::sptr<PythonController> >(m, "PythonController", pybind11::multiple_inheritance())
         .def(pybind11::init<>())
+        .def("addInitCallback", pybind11::overload_cast<const HandleVoidCallback&>(&PythonController::addInitCallback))
         .def("addCallback", pybind11::overload_cast<const sofa::core::objectmodel::Event*, const HandleEventCallback&>(&PythonController::addCallback))
         .def("addCallback", pybind11::overload_cast<const std::string&, const HandleEventCallback&>(&PythonController::addCallback))
         .def("removeCallback", pybind11::overload_cast<const sofa::core::objectmodel::Event*>(&PythonController::removeCallback))
