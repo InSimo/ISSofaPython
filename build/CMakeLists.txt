@@ -19,6 +19,10 @@ set(ISSOFAPYTHON_INSTALL_CMAKE_DIR   ${ISSOFAPYTHON_INSTALL_LIB_DIR}/cmake/ISSof
 
 option(ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY "Allow the generation of cached python bytecode ( .pyc files ) for release builds only" ON)
 
+option(ISSOFAPYTHON_USE_LEGACY_API "Expose some legacy APIs to get the behavior of SofaPython (methods with a 'Legacy' suffix) (can be needed at least temporarily when doing a SofaPython -> ISSofaPython migration of a large codebase)" OFF)
+
+option(ISSOFAPYTHON_CREATE_CHILD_HOOK "Call a hook each time a child node is created from python ( the hook must be manually registered from python: `sofa.HOOKS['createChild'] = some_func` )" OFF)
+
 get_filename_component(ISSOFAPYTHON_ACTUAL_SOURCE_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
 set(PYBIND11_INSTALL ON CACHE BOOL "Install pybind11 header files?" FORCE)
@@ -38,12 +42,16 @@ endif()
 set(ISSOFAPYTHON_MODULE_DIR ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/module)
 
 set( MODULE_HEADER_FILES
+    ${ISSOFAPYTHON_MODULE_DIR}/common.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseClassBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseContextBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseDataBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseLinkBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseObjectBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/BaseMappingBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/CollisionModelBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/BaseStateBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseObjectDescriptionBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseNodeBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/ContextBinding.h
@@ -52,22 +60,31 @@ set( MODULE_HEADER_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.h
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/GNodeBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/TopologyBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/BaseMeshTopologyBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/PointSetTopologyModifierBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/TriangleSetTopologyModifierBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/ObjectFactoryBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/PluginManagerBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/SofaSTLBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/PythonController.h
     ${ISSOFAPYTHON_MODULE_DIR}/PythonEvent.h
     ${ISSOFAPYTHON_MODULE_DIR}/VisualParamsBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/PythonVisitor.h
     ${ISSOFAPYTHON_MODULE_DIR}/ISSofaPythonModule.h
     )
 
 set( MODULE_SOURCE_FILES 
+    ${ISSOFAPYTHON_MODULE_DIR}/common.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseClassBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseContextBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseDataBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseLinkBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseObjectBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/BaseMappingBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/CollisionModelBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/BaseStateBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseObjectDescriptionBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseNodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ContextBinding.cpp
@@ -76,17 +93,22 @@ set( MODULE_SOURCE_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/GNodeBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/TopologyBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/BaseMeshTopologyBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/PointSetTopologyModifierBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/TriangleSetTopologyModifierBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ObjectFactoryBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/PluginManagerBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/PythonController.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/PythonEvent.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/PythonVisitor.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/VisualParamsBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ISSofaPythonModule.cpp
 )
 
 add_library(ISSofaPython SHARED ${MODULE_SOURCE_FILES} ${MODULE_HEADER_FILES} )
 target_link_libraries(ISSofaPython PUBLIC pybind11::module)
-target_link_libraries(ISSofaPython PRIVATE SofaSimulationTree ${PYTHON_LIBRARIES})
+target_link_libraries(ISSofaPython PRIVATE SofaSimulationTree SofaComponentGeneral SofaComponentBase ${PYTHON_LIBRARIES})
 
 target_include_directories(ISSofaPython PUBLIC 
                            $<BUILD_INTERFACE:${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}>
@@ -96,6 +118,14 @@ set_target_properties(ISSofaPython PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                               SUFFIX "${PYTHON_MODULE_EXTENSION}")
 set(ISSOFAPYTHON_COMPILER_FLAGS "-DSOFA_BUILD_ISSOFAPYTHON")
 set_target_properties( ISSofaPython PROPERTIES COMPILE_FLAGS "${ISSOFAPYTHON_COMPILER_FLAGS}"  )
+
+if (ISSOFAPYTHON_USE_LEGACY_API)
+    target_compile_definitions(ISSofaPython PRIVATE "ISSOFAPYTHON_USE_LEGACY_API=1")
+endif()
+
+if (ISSOFAPYTHON_CREATE_CHILD_HOOK)
+    target_compile_definitions(ISSofaPython PRIVATE "ISSOFAPYTHON_CREATE_CHILD_HOOK=1")
+endif()
 
 set( PLUGIN_HEADER_FILES 
     ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/initPlugin.h

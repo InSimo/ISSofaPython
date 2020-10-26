@@ -587,6 +587,73 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
         return pyList;
 
     }
+    else if(typeInfo->ValidInfo() &&  typeInfo->IsMultiValue())
+    {
+        const AbstractMultiValueTypeInfo* mvinfo = typeInfo->MultiValueType();
+        if (mvinfo->finalSize(dataPtr)==1 && mvinfo->FixedFinalSize())
+        {
+            // this type is NOT a vector; return directly the proper native type
+            if (mvinfo->String())
+            {
+                // it's some text
+                return pybind11::str(mvinfo->getFinalValueString(dataPtr,0).c_str());
+            }
+            if (mvinfo->Scalar())
+            {
+                // it's a SReal
+                return pybind11::float_(mvinfo->getFinalValueScalar(dataPtr,0));
+            }
+            if (mvinfo->Integer())
+            {
+                // it's some Integer...
+                return pybind11::int_((long)mvinfo->getFinalValueInteger(dataPtr,0));
+            }
+            else
+            {
+                throw SofaDataAttributeError(data, "unsupported DataTypeInfo");
+            }
+        }
+        else
+        {
+            // this is a vector; return a python list of the corrsponding type (ints, scalars or strings)
+            const int rowWidth = mvinfo->FinalSize();
+            const int nbRows = mvinfo->finalSize(dataPtr) / rowWidth;
+
+            pybind11::list rows;
+            for (int i=0; i<nbRows; i++)
+            {
+                pybind11::list row;
+                for (int j=0; j<rowWidth; j++)
+                {
+                    // build each value of the list
+                    if (mvinfo->String())
+                    {
+                        // it's some text
+                        row.append(pybind11::str(mvinfo->getFinalValueString(dataPtr, i*rowWidth+j).c_str()));
+                    }
+                    else if (mvinfo->Scalar())
+                    {
+                        // it's a SReal
+                        row.append(pybind11::float_(mvinfo->getFinalValueScalar(dataPtr, i*rowWidth+j)));
+                    }
+                    else if (mvinfo->Integer())
+                    {
+                        // it's some Integer...
+                        row.append(pybind11::int_((long)mvinfo->getFinalValueInteger(dataPtr, i*rowWidth+j)));
+                    }
+                    else
+                    {
+                        // this type is not yet supported
+                        std::cerr << "<ISSofaPython> BaseData_getAttr_value WARNING: unsupported native type=" << data->getValueTypeString().c_str() << " ; returning string value" << std::endl;
+                        row.append(pybind11::str(mvinfo->getFinalValueString(dataPtr, i*rowWidth+j).c_str()));
+                    }
+                }
+                rows.append(row);
+            }
+
+            return rows;
+        }
+    }
     else
     {
         throw SofaDataAttributeError(data, "unsupported DataTypeInfo");
@@ -656,6 +723,16 @@ std::string getPath(const BaseData* data)
     return path;
 }
 
+pybind11::object getFullPath(BaseData* data)
+{
+    if (sofa::core::objectmodel::DataFileName* dataFilename = dynamic_cast<sofa::core::objectmodel::DataFileName*>(data))
+    {
+        return pybind11::str(dataFilename->getFullPath().c_str());
+    }
+
+    return pybind11::none();
+}
+
 pybind11::object getDataJsonAsPyObject(const BaseData* data)
 {
     // depending on the data type, we return the good python type (int, float, sting, array, ...)
@@ -712,6 +789,7 @@ void initBindingBaseData(pybind11::module& m)
         .def("getValueString",&BaseData::getValueString)
         .def("getPath",&getPath) // deprecated, prefer the less verbose "path" property
         .def_property_readonly("path", &getPath)
+        .def_property_readonly("fullPath", &getFullPath)
         .def("getParent",&BaseData::getParent)
         .def("setParent", pybind11::overload_cast<const std::string&>(&BaseData::setParent) )
         .def("setParent", pybind11::overload_cast<BaseData*,const std::string&>(&BaseData::setParent), 

@@ -13,13 +13,21 @@
 #include "BaseBinding.h"
 #include "EventBinding.h"
 #include "BaseObjectBinding.h"
+#include "BaseMappingBinding.h"
+#include "CollisionModelBinding.h"
 #include "BaseContextBinding.h"
 #include "ContextBinding.h"
 #include "BaseNodeBinding.h"
 #include "ObjectFactoryBinding.h"
+#include "BaseStateBinding.h"
 
 #include "NodeBinding.h"
 #include "GNodeBinding.h"
+
+#include "TopologyBinding.h"
+#include "BaseMeshTopologyBinding.h"
+#include "PointSetTopologyModifierBinding.h"
+#include "TriangleSetTopologyModifierBinding.h"
 
 #include "PythonController.h"
 #include "PythonEvent.h"
@@ -48,10 +56,18 @@ PYBIND11_MODULE(ISSofaPython, m)
     sofa::python::initBindingBase(m);
     sofa::python::initBindingEvent(m);
     sofa::python::initBindingBaseObject(m);
+    sofa::python::initBindingBaseState(m);
+    sofa::python::initBindingBaseMapping(m);
+    sofa::python::initBindingCollisionModel(m);
     sofa::python::initBindingBaseContext(m);
     sofa::python::initBindingContext(m);
     sofa::python::initBindingBaseNode(m);
     sofa::python::initBindingObjectFactory(m);
+
+    sofa::python::initBindingTopology(m);
+    sofa::python::initBindingBaseMeshTopology(m);
+    sofa::python::initBindingPointSetTopologyModifier(m);
+    sofa::python::initBindingTriangleSetTopologyModifier(m);
 
     sofa::python::initBindingNode(m);
     sofa::python::initBindingGNode(m);

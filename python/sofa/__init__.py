@@ -83,3 +83,11 @@ if hasattr(__main__, '__file__'): # if the module was imported from a script run
     # Add the scene directory to Sofa data path
     file_dir = os.path.dirname(os.path.realpath(__main__.__file__))
     addDataPath(file_dir)
+
+# Hook functions can (optionally) be registered in the following dict, for e.g.
+#
+#    import sofa
+#    sofa.HOOKS['createChild'] = lambda node: print('New node %r created!' % node.getName())
+#
+# ('createChild' is the only avaiable hook, and we will certainly never add other)
+HOOKS = {}

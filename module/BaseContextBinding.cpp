@@ -1,9 +1,14 @@
 #include "BaseContextBinding.h"
+#include "common.h"
+
 #include <sofa/core/objectmodel/BaseContext.h>
 #include <sofa/core/objectmodel/Base.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/defaulttype/TemplatesAliases.h>
+
+#include <sofa/simulation/common/Node.h>
+
 #include <pybind11/stl.h>
 
 namespace sofa
@@ -33,7 +38,7 @@ void appendMatchingObjects( std::vector< pybind11::object >& objects,
     {
         if ( classInfo->dynamicCast(obj.get()) )
         {
-            objects.push_back(pybind11::cast(obj));
+            objects.push_back(getDerivedPyObject(obj.get()));
         }
     }
 }
@@ -77,7 +82,7 @@ std::vector< pybind11::object > searchObjects(BaseContext* ctx, BaseContext::Sea
     {
         for (const auto& obj : allObjects)
         {
-            allBindedObjects.push_back(pybind11::cast(obj));
+            allBindedObjects.push_back(getDerivedPyObject(obj.get()));
         }
         
         return allBindedObjects;
@@ -174,13 +179,82 @@ pybind11::object getObject(BaseContext* ctx, std::string path)
 
     if (obj)
     {
-        return pybind11::cast(obj);
+        return getDerivedPyObject(obj.get());
     }
     else
     {
         return pybind11::none();
     }
 }
+
+#ifdef ISSOFAPYTHON_USE_LEGACY_API
+
+// The search* methods don't always give the same output as the former SofaPython's getObjects method:
+// For eg. contextObj.searchDown('MechanicalObject') does not produce the same output as SofaPython's `getObjects('SearchDown', 'MechanicalObject')[0]`.
+// Ideally we could certainly modify the search* methods, or modify python code using it,
+// when migrating from SofaPython to ISSofaPython, but for now the SofaPython's implementation is added to limit regressions.
+pybind11::object getObjectsLegacy(BaseContext* ctx, std::string searchDirection, std::string typeName, std::string name)
+{
+    ObjectFactory::ClassEntry* class_entry = typeName.empty() ? nullptr : &ObjectFactory::getInstance()->getEntry(typeName);
+    sofa::core::objectmodel::BaseContext::SearchDirection searchDirectionEnum = sofa::core::objectmodel::BaseContext::Local;
+    if ( !searchDirection.empty() ) 
+    {
+        if ( searchDirection == "SearchUp" )
+        {
+            searchDirectionEnum= sofa::core::objectmodel::BaseContext::SearchUp;
+        }
+        else if ( searchDirection == "Local" )
+        {
+            searchDirectionEnum= sofa::core::objectmodel::BaseContext::Local;
+        }
+        else if ( searchDirection == "SearchDown" )
+        {
+            searchDirectionEnum= sofa::core::objectmodel::BaseContext::SearchDown;
+        }
+        else if ( searchDirection == "SearchRoot" )
+        {
+            searchDirectionEnum= sofa::core::objectmodel::BaseContext::SearchRoot;
+        }
+        else if ( searchDirection == "SearchParents" )
+        {
+            searchDirectionEnum= sofa::core::objectmodel::BaseContext::SearchParents;
+        }
+        else 
+        {
+            throw std::invalid_argument("getObjects: invalid search direction, expected: 'SearchUp', 'Local', 'SearchDown', 'SearchRoot', or 'SearchParents'." );
+        }
+    }
+
+    sofa::helper::vector<sofa::sptr<BaseObject>> list;
+    ctx->get<BaseObject>(&list, searchDirectionEnum);
+    pybind11::list pyList;
+    for (unsigned int i = 0; i < list.size(); i++)
+    {
+        BaseObject* o = list[i].get();
+        if (!class_entry || o->getClassName() == class_entry->className || class_entry->creatorMap.find(o->getClassName()) != class_entry->creatorMap.end())
+        {
+            if (name.empty() || name == o->getName())
+            {
+                pyList.append(getDerivedPyObject(o));
+            }
+        }
+    }
+    return pyList;
+}
+
+pybind11::object getParentsLegacy(BaseContext* ctx)
+{
+    simulation::Node* node = simulation::Node::DynamicCast(ctx);
+    const core::objectmodel::BaseNode::Children& parents = node->getParents();
+    pybind11::list pyList;
+    for (core::objectmodel::BaseNode* parent: parents)
+    {
+        pyList.append(getDerivedPyObject(parent));
+    }
+    return pyList;
+}
+
+#endif // ISSOFAPYTHON_USE_LEGACY_API
 
 void initBindingBaseContext(pybind11::module& m)
 {
@@ -225,6 +299,13 @@ void initBindingBaseContext(pybind11::module& m)
                                                pybind11::arg("templateName") = std::string())
         .def("getDt",&BaseContext::getDt )
         .def("getTime",&BaseContext::getTime )
+
+#ifdef ISSOFAPYTHON_USE_LEGACY_API
+        // Legacy implementation of `getObjects` from SofaPython
+        .def("getObjectsLegacy", &getObjectsLegacy, pybind11::arg("searchDirection") = std::string(), pybind11::arg("typeName") = std::string(), pybind11::arg("name") = std::string())
+        // Legacy implementation of `getParents` from SofaPython
+        .def("getParentsLegacy", &getParentsLegacy)
+#endif
         ;
 }
 
