@@ -8,6 +8,7 @@
 #define ISSOFA_PYTHON_PYTHONCONTROLLER_H
 
 #include <sofa/core/objectmodel/BaseObject.h>
+#include <sofa/helper/system/thread/thread_specific_ptr.h>
 
 #include <pybind11/pybind11.h>
 
@@ -41,6 +42,26 @@ public:
     void addCallback(const std::string& className, const HandleEventCallback& callback);
     void removeCallback(const sofa::core::objectmodel::Event* e);
     void removeCallback(const std::string& className);
+
+    /// A convenience class to obtain and release to GIL
+    struct AcquireThreadState {
+        AcquireThreadState() {
+            if( have_lock == 0 ) {
+                state = PyGILState_Ensure();
+            }
+            have_lock++;
+        }
+
+        virtual ~AcquireThreadState() {
+            have_lock--;
+            if( have_lock == 0 ) {
+                PyGILState_Release( state );
+            }
+        }
+
+        static SOFA_TLS_KEYWORD PyGILState_STATE state;
+        static SOFA_TLS_KEYWORD int have_lock;
+    };
 
 protected:
     PythonController();
