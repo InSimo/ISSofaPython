@@ -180,8 +180,8 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
             RESULT_VARIABLE SONAME_ERRORCODE
             OUTPUT_VARIABLE PYTHON_LIBRARY_SONAME
             OUTPUT_STRIP_TRAILING_WHITESPACE)
-        if (SONAME_ERRORCODE)
-            message(WARNING "Failed to get python library SONAME")
+        if (SONAME_ERRORCODE OR NOT PYTHON_LIBRARY_SONAME)
+            message(FATAL_ERROR "Failed to get python library SONAME")
         else()
             target_compile_definitions(ISSofaPythonPlugin PRIVATE "PYTHON_LIBRARY_SONAME=\"${PYTHON_LIBRARY_SONAME}\"")
             message(STATUS "python library SONAME: ${PYTHON_LIBRARY_SONAME}")
