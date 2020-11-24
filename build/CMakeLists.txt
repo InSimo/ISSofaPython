@@ -175,8 +175,19 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
     message(STATUS "PYTHON_LIBRARIES=${PYTHON_LIBRARIES}")
     message(STATUS "PYTHON_LIBRARY=${PYTHON_LIBRARY}")
     message(STATUS "Python_LIBRARIES=${Python_LIBRARIES}")
+    message(STATUS "Python_ROOT_DIR=${Python_ROOT_DIR}")
     if (PYTHON_LIBRARIES)
-        execute_process(COMMAND bash -c "readelf -d ${PYTHON_LIBRARIES} | awk '$2==\"(SONAME)\" { print substr(\$5,2,length(\$5)-2) }'"
+        if (IS_ABSOLUTE "${PYTHON_LIBRARIES}")
+            set(PYTHON_LIB_PATH "${PYTHON_LIBRARIES}")
+        else()
+            # PYTHON_LIBRARIES is not a valid file, try to use find_library
+            find_library(PYTHON_LIB_PATH NAMES "${PYTHON_LIBRARIES}" "lib${PYTHON_LIBRARIES}.so" HINTS ${Python_ROOT_DIR} PATH_SUFFIXES lib "lib/${PYTHON_LIBRARIES}")
+            message(STATUS "PYTHON_LIB_PATH=${PYTHON_LIB_PATH}")
+            if (NOT PYTHON_LIB_PATH)
+                message(FATAL_ERROR "Failed to get python library file path")
+            endif()
+        endif()
+        execute_process(COMMAND bash -c "readelf -d \"${PYTHON_LIB_PATH}\" | awk '$2==\"(SONAME)\" { print substr(\$5,2,length(\$5)-2) }'"
             RESULT_VARIABLE SONAME_ERRORCODE
             OUTPUT_VARIABLE PYTHON_LIBRARY_SONAME
             OUTPUT_STRIP_TRAILING_WHITESPACE)
