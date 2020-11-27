@@ -7,6 +7,7 @@
 #include "ObjectFactoryBinding.h"
 
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/core/behavior/BaseAnimationLoop.h>
 #include <sofa/simulation/common/ScriptEvent.h>
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
@@ -113,6 +114,10 @@ pybind11::object sendScriptEvent(sofa::sptr<Node> node, const std::string& event
     {
         std::cerr << "<ISSofaPython> sendScriptEvent WARNING: data is not None or is not an empty string, value not handled: " << pybind11::str(data).cast<std::string>() << std::endl;
     }
+
+    sofa::core::behavior::BaseAnimationLoop* m_animationloop;
+    node->getRootContext()->get(m_animationloop);
+    m_animationloop->setSimulationToSleep(false);  // See T10110
 
     sofa::simulation::ScriptEvent event(node, eventName.c_str());
     sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
