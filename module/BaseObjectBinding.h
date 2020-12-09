@@ -58,6 +58,11 @@ public:
         PYBIND11_OVERLOAD(void, TSofaObject, reset, );
     }
 
+    void draw(const core::visual::VisualParams* vparams) override
+    {
+        PYBIND11_OVERLOAD(void, TSofaObject, draw, vparams);
+    }
+
     using PySofaBase<TSofaObject>::PySofaBase; // Inherit constructors
 };
 

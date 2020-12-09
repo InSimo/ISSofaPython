@@ -63,15 +63,16 @@ std::string getPath(const BaseObject* obj)
 void initBindingBaseObject(pybind11::module& m)
 {
     pybind11::class_<BaseObject, Base, 
-                     PySofaBaseObject<BaseObject>, 
+                     PySofaBaseObject<BaseObject>,
                      sofa::sptr<BaseObject> >(m, "BaseObject")
-        .def(pybind11::init<>() )
+        .def(pybind11::init<>())
         .def("init", &BaseObject::init)
         .def("bwdInit", &BaseObject::bwdInit)
         .def("reinit", &BaseObject::reinit)
         .def("handleEvent", &BaseObject::handleEvent)
         .def("cleanup",&BaseObject::cleanup)
         .def("reset",&BaseObject::reset)
+        .def("draw", &BaseObject::draw)
         .def("getMutableContext", pybind11::overload_cast<>( &BaseObject::getContext), pybind11::return_value_policy::reference)
         .def("getContext", pybind11::overload_cast<>(&BaseObject::getContext, pybind11::const_), pybind11::return_value_policy::reference)
         .def("getPath", &getPath) // deprecated, prefer the less verbose "path" property
