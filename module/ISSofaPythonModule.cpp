@@ -25,6 +25,9 @@
 #include "PythonEvent.h"
 #include "PluginManagerBinding.h"
 
+#include "VisualParamsBinding.h"
+#include "DrawToolBinding.h"
+
 #include <sofa/simulation/common/Simulation.h>
 #include <sofa/simulation/tree/GNode.h>
 
@@ -55,6 +58,9 @@ PYBIND11_MODULE(ISSofaPython, m)
 
     sofa::python::initBindingPythonController(m);
     sofa::python::initBindingPythonEvent(m);
+
+    sofa::python::initBindingVisualParams(m);
+    sofa::python::initBindingDrawTool(m);
 
     m.def("initializeGraph", [](GNode::SPtr node) { sofa::simulation::initializeGraph(node.get()); });
     m.def("cleanupGraph", [](GNode::SPtr node) { sofa::simulation::cleanupGraph(node.get());  });

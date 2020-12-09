@@ -47,6 +47,7 @@ set( MODULE_HEADER_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/BaseObjectDescriptionBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseNodeBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/ContextBinding.h
+    ${ISSOFAPYTHON_MODULE_DIR}/DrawToolBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/EventBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.h
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.h
@@ -56,6 +57,7 @@ set( MODULE_HEADER_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/SofaSTLBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/PythonController.h
     ${ISSOFAPYTHON_MODULE_DIR}/PythonEvent.h
+    ${ISSOFAPYTHON_MODULE_DIR}/VisualParamsBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/ISSofaPythonModule.h
     )
 
@@ -69,6 +71,7 @@ set( MODULE_SOURCE_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/BaseObjectDescriptionBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseNodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ContextBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/DrawToolBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/EventBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.cpp
@@ -77,6 +80,7 @@ set( MODULE_SOURCE_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/PluginManagerBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/PythonController.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/PythonEvent.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/VisualParamsBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/ISSofaPythonModule.cpp
 )
 
