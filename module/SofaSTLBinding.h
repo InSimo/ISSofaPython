@@ -11,6 +11,8 @@
 #include <sofa/helper/vector.h>
 #include <sofa/helper/set.h>
 #include <sofa/helper/fixed_array.h>
+#include <sofa/defaulttype/Vec.h>
+#include <sofa/helper/Quater.h>
 
 namespace pybind11
 {
@@ -25,6 +27,13 @@ template <typename Type> struct type_caster<sofa::helper::vector<Type> >
 
 template <typename Key, typename Compare, typename Alloc> struct type_caster<sofa::helper::set<Key, Compare, Alloc> >
     : set_caster<sofa::helper::set<Key, Compare, Alloc>, Key> { };
+
+
+template <typename Real, size_t Size> struct type_caster<sofa::defaulttype::Vec<Size, Real> >
+    : array_caster<sofa::defaulttype::Vec<Size, Real>, Real, false, Size> { };
+
+template <typename Real> struct type_caster<sofa::helper::Quater<Real> >
+    : array_caster<sofa::helper::Quater<Real>, Real, false, 4> { };
 
 }
 
