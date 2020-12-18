@@ -8,6 +8,7 @@
 #include "BaseObjectBinding.h"
 #include "BaseDataBinding.h"
 #include "BaseObjectDescriptionBinding.h"
+#include "common.h"
 #include "Exceptions.h"
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/objectmodel/Base.h>
@@ -158,7 +159,7 @@ pybind11::object createObject(ObjectFactory* factory, BaseContext* ctx, pybind11
     }
 
 
-    return pybind11::cast(obj);
+    return getDerivedPyObject(obj.get());
 }
 
 
