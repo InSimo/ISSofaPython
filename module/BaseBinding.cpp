@@ -30,18 +30,25 @@ namespace internal
 
 pybind11::object getAttr(Base* self, const std::string& attr)
 {
-    if (BaseData* d = self->findData(attr))
+    std::string attribute = attr;
+    sofa::core::objectmodel::Base::MapData::const_iterator findIt = self->getDataAliases().find(attr);
+    if (findIt != self->getDataAliases().end())
+    {
+        attribute = findIt->second->getName();
+    }
+
+    if (BaseData* d = self->findData(attribute))
     {
         return pybind11::cast(d);
     }
-    else if (BaseLink* l = self->findLink(attr))
+    else if (BaseLink* l = self->findLink(attribute))
     {
         return pybind11::cast(l);
     }
     else
     {
         pybind11::object pySelf = pybind11::cast(self);
-        return pySelf.attr("__getattribute__")(attr.c_str());
+        return pySelf.attr("__getattribute__")(attribute.c_str());
     }
 }
 
