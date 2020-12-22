@@ -1,12 +1,13 @@
 import ISSofaPython as Sofa
 
+
 class MyObject(Sofa.BaseObject):
-    def __init__(self,name):
+    def __init__(self, name):
         Sofa.BaseObject.__init__(self)
         self.setName(name)
-    
+
     def init(self):
-        print self.getName() + ": initialized"
+        print(self.getName() + ": initialized")
 
 
 rootObject = MyObject("rootObject")
