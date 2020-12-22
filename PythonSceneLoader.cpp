@@ -85,6 +85,12 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char *filename, const
     using sofa::simulation::tree::GNode;
     using sofa::core::objectmodel::New;
 
+#if !defined(WIN32)
+    // Reset locale settings to make sure that floating-point values are interpreted correctly
+    setlocale(LC_ALL,"C");
+    setlocale(LC_NUMERIC,"C");
+#endif
+
     std::string fileDir = SetDirectory::GetParentDir(filename);
     std::string file    = SetDirectory::GetFileNameWithoutExtension(filename);
 
