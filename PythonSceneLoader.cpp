@@ -125,7 +125,7 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char *filename, const
                 from os import path
                 prev_scene_local_modules = []
                 # SCENE_FILE_NAME = path.basename(SCENE_FILE_PATH)
-                for name, module in sys.modules.iteritems():
+                for name, module in sys.modules.items():
                     module_file_path = getattr(module, '__file__', None)
                     if module_file_path is None:
                         continue
