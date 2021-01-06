@@ -21,7 +21,7 @@ using sofa::core::BaseState;
 
 void initBindingBaseState(pybind11::module& m)
 {
-    pybind11::class_<BaseState, BaseObject, Base,
+    pybind11::class_<BaseState, BaseObject,
                      PySofaBaseState<BaseState>,
                      sofa::sptr<BaseState>>(m, "BaseState")
         .def("resize", &BaseState::resize)

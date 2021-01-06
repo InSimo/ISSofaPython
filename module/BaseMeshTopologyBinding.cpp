@@ -69,7 +69,7 @@ pybind11::object getEdgesInTriangle(BaseMeshTopology* obj, int triangleId)
 
 void initBindingBaseMeshTopology(pybind11::module& m)
 {
-    pybind11::class_<BaseMeshTopology, Topology, BaseObject, Base,
+    pybind11::class_<BaseMeshTopology, Topology, 
                      sofa::sptr<BaseMeshTopology>>(m, "BaseMeshTopology")
         .def("getNbEdges", &BaseMeshTopology::getNbEdges)
         .def("getNbTriangles", &BaseMeshTopology::getNbTriangles)

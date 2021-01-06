@@ -21,7 +21,7 @@ using sofa::core::CollisionModel;
 
 void initBindingCollisionModel(pybind11::module& m)
 {
-    pybind11::class_<CollisionModel, BaseObject, Base,
+    pybind11::class_<CollisionModel, BaseObject,
                      sofa::sptr<CollisionModel>>(m, "CollisionModel")
         .def("setActive", &CollisionModel::setActive)
         ;

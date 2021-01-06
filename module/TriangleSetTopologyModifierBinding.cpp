@@ -92,7 +92,7 @@ void removeTriangles(TriangleSetTopologyModifier* obj, pybind11::list pyTriangle
 
 void initBindingTriangleSetTopologyModifier(pybind11::module& m)
 {
-    pybind11::class_<TriangleSetTopologyModifier, PointSetTopologyModifier, BaseObject, Base,
+    pybind11::class_<TriangleSetTopologyModifier, PointSetTopologyModifier, 
                      sofa::sptr<TriangleSetTopologyModifier>>(m, "TriangleSetTopologyModifier")
         .def("addTriangles", &internal::addTriangles)
         .def("removeTriangles", &internal::removeTriangles)

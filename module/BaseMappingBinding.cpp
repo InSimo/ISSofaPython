@@ -74,7 +74,7 @@ void setTo(BaseMapping* mapping, BaseState* to)
 
 void initBindingBaseMapping(pybind11::module& m)
 {
-    pybind11::class_<BaseMapping, BaseObject, Base,
+    pybind11::class_<BaseMapping, BaseObject,
                      sofa::sptr<BaseMapping> >(m, "BaseMapping")
         .def("apply", &BaseMapping::apply)
         .def("applyJ", &BaseMapping::applyJ)

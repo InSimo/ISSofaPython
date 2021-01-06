@@ -40,7 +40,7 @@ void propagateEndingEvent(PointSetTopologyModifier* obj)
 
 void initBindingPointSetTopologyModifier(pybind11::module& m)
 {
-    pybind11::class_<PointSetTopologyModifier, BaseObject, Base,
+    pybind11::class_<PointSetTopologyModifier, BaseObject,
                      sofa::sptr<PointSetTopologyModifier>>(m, "PointSetTopologyModifier")
         .def("propagateEndingEvent", &internal::propagateEndingEvent)
         ;
