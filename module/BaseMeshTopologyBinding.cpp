@@ -70,7 +70,9 @@ pybind11::object getEdgesInTriangle(BaseMeshTopology* obj, int triangleId)
 void initBindingBaseMeshTopology(pybind11::module& m)
 {
     pybind11::class_<BaseMeshTopology, Topology, 
+                     PySofaBaseMeshTopology<BaseMeshTopology>,
                      sofa::sptr<BaseMeshTopology>>(m, "BaseMeshTopology")
+        .def(pybind11::init<>() )
         .def("getNbEdges", &BaseMeshTopology::getNbEdges)
         .def("getNbTriangles", &BaseMeshTopology::getNbTriangles)
         .def("getNbQuads", &BaseMeshTopology::getNbQuads)
@@ -81,7 +83,16 @@ void initBindingBaseMeshTopology(pybind11::module& m)
         .def("getTrianglesAroundVertex", &internal::getTrianglesAroundVertex)
         .def("getTrianglesAroundEdge", &internal::getTrianglesAroundEdge)
         .def("getEdgesInTriangle", &internal::getEdgesInTriangle)
+        .def("getEdgesInTriangle", &internal::getEdgesInTriangle)
+
+        .def("getEdges", &BaseMeshTopology::getEdges)
+        .def("getTriangles", &BaseMeshTopology::getTriangles)
+        .def("getQuads", &BaseMeshTopology::getQuads)
+        .def("getTetrahedra", &BaseMeshTopology::getTetrahedra)
+        .def("getHexahedra", &BaseMeshTopology::getHexahedra)
+        .def("getTopologyType", &BaseMeshTopology::getTopologyType)
         ;
+
 }
 
 }

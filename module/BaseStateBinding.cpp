@@ -24,7 +24,11 @@ void initBindingBaseState(pybind11::module& m)
     pybind11::class_<BaseState, BaseObject,
                      PySofaBaseState<BaseState>,
                      sofa::sptr<BaseState>>(m, "BaseState")
+        .def(pybind11::init<>() )
+        .def("getSize", &BaseState::getSize)
         .def("resize", &BaseState::resize)
+        .def("baseWrite", &BaseState::baseWrite)
+        .def("baseRead", &BaseState::baseRead)
         ;
 }
 

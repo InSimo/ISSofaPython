@@ -24,9 +24,29 @@ class PySofaBaseState : public PySofaBase<TSofaObject>
 {
 public:
 
+    void isClassMacroUsed(TSofaObject* sofaObject) override 
+    {
+        PYBIND11_OVERLOAD_PURE(void, TSofaObject, isClassMacroUsed, sofaObject);
+    }
+    
+    int getSize() const override
+    {
+        PYBIND11_OVERLOAD_PURE(int, TSofaObject, getSize, );
+    }
+
     void resize(int vsize) override
     {
         PYBIND11_OVERLOAD_PURE(void, TSofaObject, resize, vsize);
+    }
+
+    sofa::core::objectmodel::BaseData* baseWrite(sofa::core::VecId v) override
+    {
+        PYBIND11_OVERLOAD_PURE(sofa::core::objectmodel::BaseData*, TSofaObject, baseWrite, v);
+    }
+
+    const sofa::core::objectmodel::BaseData* baseRead(sofa::core::ConstVecId v) const override
+    {
+        PYBIND11_OVERLOAD_PURE(const sofa::core::objectmodel::BaseData*, TSofaObject, baseRead, v);
     }
 
     using PySofaBase<TSofaObject>::PySofaBase; // Inherit constructors
