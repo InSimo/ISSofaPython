@@ -7,7 +7,7 @@
 #ifndef ISSOFA_PYTHON_BASESTATEBINDING_H
 #define ISSOFA_PYTHON_BASESTATEBINDING_H
 
-#include "BaseBinding.h"
+#include "BaseObjectBinding.h"
 
 #include <pybind11/pybind11.h>
 
@@ -20,7 +20,7 @@ namespace python
 void initBindingBaseState(pybind11::module& m);
 
 template< class TSofaObject >
-class PySofaBaseState : public PySofaBase<TSofaObject>
+class PySofaBaseState : public PySofaBaseObject<TSofaObject>
 {
 public:
 
@@ -49,7 +49,7 @@ public:
         PYBIND11_OVERLOAD_PURE(const sofa::core::objectmodel::BaseData*, TSofaObject, baseRead, v);
     }
 
-    using PySofaBase<TSofaObject>::PySofaBase; // Inherit constructors
+    using PySofaBaseObject<TSofaObject>::PySofaBaseObject; // Inherit constructors
 };
 
 }

@@ -15,7 +15,7 @@ namespace sofa
 namespace python
 {
 
-using sofa::core::objectmodel::Base;
+//using sofa::core::objectmodel::Base;
 using sofa::core::objectmodel::BaseObject;
 using sofa::core::BaseState;
 
