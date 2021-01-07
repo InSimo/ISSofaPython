@@ -77,18 +77,6 @@ void initBindingBaseMapping(pybind11::module& m)
                      PySofaBaseMapping<BaseMapping>, // trampoline "alias" class 
                      sofa::sptr<BaseMapping> >(m, "BaseMapping")
         .def(pybind11::init<>() )
-        .def("init", [](BaseMapping &self) { return self.init(); })
-        .def("bwdInit", [](BaseMapping &self) { return self.bwdInit(); })
-        .def("reinit", [](BaseMapping &self) { return self.reinit(); })
-        // .def("handleEvent", [](BaseMapping &self) { return self.handleEvent(); })
-        .def("cleanup", [](BaseMapping &self) { return self.cleanup(); })
-        .def("reset", [](BaseMapping &self) { return self.reset(); })
-        // .def("init", &BaseMapping::init)
-        // .def("bwdInit", &BaseMapping::bwdInit)
-        // .def("reinit", &BaseMapping::reinit)
-        // .def("handleEvent", &BaseMapping::handleEvent)
-        // .def("cleanup",&BaseMapping::cleanup)
-        // .def("reset",&BaseMapping::reset)
 
         // .def("apply", &BaseMapping::apply)
         // .def("applyJ", &BaseMapping::applyJ)
@@ -113,12 +101,8 @@ void initBindingBaseMapping(pybind11::module& m)
         .def("disable",&BaseMapping::disable)
         ;
 
-            // cl.def("f", [](Derived &self) { return self.f(); });
 }
 
 }
 
 }
-
-    // .def("set", py::overload_cast<int>(&Pet::set), "Set the pet's age")
-    // .def("set", py::overload_cast<const std::string &>(&Pet::set), "Set the pet's name");

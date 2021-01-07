@@ -54,31 +54,7 @@ public:
     {
         PYBIND11_OVERLOAD_PURE(void, TSofaObject, isClassMacroUsed, sofaObject);
     }
-    
-    void init() override 
-    {
-        PYBIND11_OVERLOAD(void, TSofaObject, init, );
-    }
 
-    void bwdInit() override
-    {
-        PYBIND11_OVERLOAD(void, TSofaObject, bwdInit, );
-    }
-
-    void reinit() override
-    {
-        PYBIND11_OVERLOAD(void, TSofaObject, reinit, );
-    }
-
-    void cleanup() override
-    {
-        PYBIND11_OVERLOAD(void, TSofaObject, cleanup, );
-    }
-
-    void reset() override
-    {
-        PYBIND11_OVERLOAD(void, TSofaObject, reset, );
-    }
 
 
     void apply(const MechanicalParams* mparams = MechanicalParams::defaultInstance(), MultiVecCoordId outPos = VecCoordId::position(), ConstMultiVecCoordId inPos = ConstVecCoordId::position() ) override
