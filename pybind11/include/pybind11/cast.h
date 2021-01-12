@@ -18,6 +18,7 @@
 #include <limits>
 #include <tuple>
 #include <type_traits>
+//#include <iostream>
 
 #if defined(PYBIND11_CPP17)
 #  if defined(__has_include)
@@ -1488,9 +1489,10 @@ protected:
         }
     }
 
-    template <typename T = holder_type, detail::enable_if_t<!std::is_constructible<T, const T &, type*>::value, int> = 0>
+    template <typename T = holder_type, detail::enable_if_t<(!std::is_constructible<T, const T &, type*>::value && !std::is_constructible<T, type*>::value), int> = 0>
     bool try_implicit_casts(handle, bool) { return false; }
 
+    // support for std::smart_ptr or similar holder copy of cast pointers
     template <typename T = holder_type, detail::enable_if_t<std::is_constructible<T, const T &, type*>::value, int> = 0>
     bool try_implicit_casts(handle src, bool convert) {
         for (auto &cast : typeinfo->implicit_casts) {
@@ -1498,6 +1500,23 @@ protected:
             if (sub_caster.load(src, convert)) {
                 value = cast.second(sub_caster.value);
                 holder = holder_type(sub_caster.holder, (type *) value);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // support for boost::intrusive_ptr or similar holder copy of cast pointers
+    template <typename T = holder_type, detail::enable_if_t<(!std::is_constructible<T, const T &, type*>::value && std::is_constructible<T, type*>::value), int> = 0>
+    bool try_implicit_casts(handle src, bool convert) {
+        for (auto &cast : typeinfo->implicit_casts) {
+            copyable_holder_caster sub_caster(*cast.first);
+            if (sub_caster.load(src, convert)) {
+                //std::cout << "success for intrusive_ptr-like try_implicit_casts " << type_id<holder_type>() << " from " << cast.first->name() << std::endl;
+                //std::cout << "Derived ptr " << (void*) sub_caster.value << std::endl;
+                value = cast.second(sub_caster.value);
+                //std::cout << "Base ptr " << (void*) value << std::endl;
+                holder = holder_type((type *) value);
                 return true;
             }
         }
