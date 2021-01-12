@@ -9,7 +9,9 @@
 #include <sofa/core/objectmodel/Base.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/objectmodel/Context.h>
+#include <sofa/core/objectmodel/BaseNode.h>
 #include <sofa/simulation/common/Node.h>
+#include <sofa/simulation/tree/GNode.h>
 
 #include <sofa/core/topology/Topology.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
@@ -21,6 +23,8 @@
 #include <SofaBaseTopology/PointSetTopologyModifier.h>
 #include <SofaBaseTopology/TriangleSetTopologyModifier.h>
 
+#include "PythonController.h"
+
 namespace sofa
 {
 
@@ -29,12 +33,20 @@ namespace python
 
 pybind11::object getDerivedPyObject(sofa::core::objectmodel::Base* obj)
 {
+    if (auto derived = sofa::simulation::tree::GNode::DynamicCast(obj))
+        return pybind11::cast(derived);
     if (auto derived = sofa::simulation::Node::DynamicCast(obj))
         return pybind11::cast(derived);
     if (auto derived = sofa::core::objectmodel::Context::DynamicCast(obj))
         return pybind11::cast(derived);
     if (auto derived = sofa::core::objectmodel::BaseContext::DynamicCast(obj))
         return pybind11::cast(derived);
+    if (auto derived = sofa::core::objectmodel::BaseNode::DynamicCast(obj))
+        return pybind11::cast(derived);
+
+    if (auto derived = PythonController::DynamicCast(obj)) {
+        return pybind11::cast(derived);
+    }
 
     if (auto derived = sofa::core::topology::BaseMeshTopology::DynamicCast(obj)) {
         return pybind11::cast(derived);

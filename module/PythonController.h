@@ -24,7 +24,6 @@ namespace python
 void initBindingPythonController(pybind11::module& m);
 
 
-// virtual inheritance fails when binding here.
 class PythonController : public sofa::core::objectmodel::BaseObject
 {
 public:

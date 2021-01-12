@@ -62,9 +62,8 @@ pybind11::object getRootFromNode(Node* /* node */)
     return getRoot();
 }
 
-pybind11::object getChildren(sofa::sptr<Node> node)
+pybind11::object getChildren(sofa::sptr<GNode> gNode)
 {
-    sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
     sofa::simulation::Node::Children children = gNode->getChildren();
     pybind11::list pyList;
     for (auto& child : children)
@@ -74,16 +73,14 @@ pybind11::object getChildren(sofa::sptr<Node> node)
     return pyList;
 }
 
-pybind11::object getChild(sofa::sptr<Node> node, const std::string& name)
+pybind11::object getChild(sofa::sptr<GNode> gNode, const std::string& name)
 {
-    sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
     auto child = gNode->getChild(name);
     return pybind11::cast(child);
 }
 
-pybind11::object createChild(sofa::sptr<Node> node, const std::string& name)
+pybind11::object createChild(sofa::sptr<GNode> gNode, const std::string& name)
 {
-    sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
     sofa::sptr<Node> nChild = gNode->createChild(name);
     sofa::sptr<GNode> gChild = sofa::core::objectmodel::SPtr_static_cast<GNode>(nChild);
 
@@ -106,7 +103,7 @@ pybind11::object createChild(sofa::sptr<Node> node, const std::string& name)
     return pyObj;
 }
 
-pybind11::object sendScriptEvent(sofa::sptr<Node> node, const std::string& eventName, pybind11::object& data)
+pybind11::object sendScriptEvent(sofa::sptr<GNode> gNode, const std::string& eventName, pybind11::object& data)
 {
     // TODO: what if data is not None or an empty string?
     //       For now it seems we don't need a PythonScriptEvent that can handle data, like the one existing in SofaPython
@@ -116,20 +113,19 @@ pybind11::object sendScriptEvent(sofa::sptr<Node> node, const std::string& event
     }
 
     sofa::core::behavior::BaseAnimationLoop* m_animationloop;
-    node->getRootContext()->get(m_animationloop);
+    gNode->getRootContext()->get(m_animationloop);
     m_animationloop->setSimulationToSleep(false);  // See T10110
 
-    sofa::simulation::ScriptEvent event(node, eventName.c_str());
-    sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
+    sofa::simulation::ScriptEvent event(gNode, eventName.c_str());
     gNode->propagateEvent(sofa::core::ExecParams::defaultInstance(), &event);
     return pybind11::none();
 }
 
 
-pybind11::object executeVisitor(sofa::sptr<Node> node, pybind11::object& pyVisitor)
+pybind11::object executeVisitor(sofa::sptr<GNode> gNode, pybind11::object& pyVisitor)
 {
     sofa::simulation::PythonVisitor visitor(sofa::core::ExecParams::defaultInstance(), pyVisitor);
-    node->executeVisitor(&visitor);
+    gNode->executeVisitor(&visitor);
     return pybind11::none();
 }
 

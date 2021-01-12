@@ -4,8 +4,8 @@
 * be redistributed. Commercial use is prohibited without a specific license.   *
 *******************************************************************************/
 
-#ifndef ISSOFA_PYTHON_BASENODENODE_H
-#define ISSOFA_PYTHON_BASENODENODE_H
+#ifndef ISSOFA_PYTHON_BASENODEBINDING_H
+#define ISSOFA_PYTHON_BASENODEBINDING_H
 
 
 #include <pybind11/pybind11.h>
@@ -26,6 +26,8 @@ void initBindingBaseNode(pybind11::module& m);
 // The issue is related to multiple inheritance and having 
 // a custom holder type ( here sofa::sptr )
 // More info here: https://stackoverflow.com/questions/49178231/pybind11-multiple-inheritance-with-custom-holder-type-fails-to-cast-to-base-type
+// UPDATE: the underlying issue is now fixed in a custom pybind11 patch: [pybind11]  FIX: enable implicit casts for boost::intrusive_ptr-like custom holders and bindings with multiple_inheritance enabled (Ref T10602)
+// however this trampoline is not really useful in practice so still not in use.
 
 template < typename TSofaNode >
 class PySofaBaseNode : public PySofaBase< TSofaNode >
@@ -61,5 +63,5 @@ public:
 
 }
 
-#endif // ISSOFA_PYTHON_BASENODENODE_H
+#endif // ISSOFA_PYTHON_BASENODEBINDING_H
 
