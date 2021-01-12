@@ -261,7 +261,7 @@ void initBindingBaseContext(pybind11::module& m)
 
     pybind11::class_<BaseContext, 
         Base, PySofaBaseContextObject<BaseContext>, 
-        sofa::sptr<BaseContext> > baseContext(m, "BaseContext");
+        sofa::sptr<BaseContext> > baseContext(m, "BaseContext", pybind11::multiple_inheritance());
     
     pybind11::enum_<BaseContext::SearchDirection>(baseContext, "SearchDirection")
         .value("SearchUp", BaseContext::SearchDirection::SearchUp)

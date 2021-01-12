@@ -30,7 +30,7 @@ namespace internal
 void initBindingTopology(pybind11::module& m)
 {
     pybind11::class_<Topology, BaseObject,
-                     sofa::sptr<Topology>>(m, "Topology")
+                     sofa::sptr<Topology>>(m, "Topology", pybind11::multiple_inheritance())
         ;
 }
 

@@ -71,7 +71,7 @@ void initBindingBaseMeshTopology(pybind11::module& m)
 {
     pybind11::class_<BaseMeshTopology, Topology, 
                      PySofaBaseMeshTopology<BaseMeshTopology>,
-                     sofa::sptr<BaseMeshTopology>>(m, "BaseMeshTopology")
+                     sofa::sptr<BaseMeshTopology>>(m, "BaseMeshTopology", pybind11::multiple_inheritance())
         .def(pybind11::init<>() )
         .def("getNbEdges", &BaseMeshTopology::getNbEdges)
         .def("getNbTriangles", &BaseMeshTopology::getNbTriangles)

@@ -64,7 +64,7 @@ void initBindingBaseObject(pybind11::module& m)
 {
     pybind11::class_<BaseObject, Base, 
                      PySofaBaseObject<BaseObject>,
-                     sofa::sptr<BaseObject> >(m, "BaseObject")
+                     sofa::sptr<BaseObject> >(m, "BaseObject", pybind11::multiple_inheritance())
         .def(pybind11::init<>())
         .def("init", &BaseObject::init)
         .def("bwdInit", &BaseObject::bwdInit)

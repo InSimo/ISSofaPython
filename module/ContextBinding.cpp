@@ -19,7 +19,7 @@ void initBindingContext(pybind11::module& m)
     using sofa::core::objectmodel::BaseContext;
 
     pybind11::class_<Context, BaseContext, 
-                     PySofaBaseContextObject<Context>, sofa::sptr<Context> >(m, "Context");
+                     PySofaBaseContextObject<Context>, sofa::sptr<Context> >(m, "Context", pybind11::multiple_inheritance());
 }
 
 }

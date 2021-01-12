@@ -75,7 +75,7 @@ void initBindingBaseMapping(pybind11::module& m)
 {
     pybind11::class_<BaseMapping, BaseObject,
                      PySofaBaseMapping<BaseMapping>, // trampoline "alias" class 
-                     sofa::sptr<BaseMapping> >(m, "BaseMapping")
+                     sofa::sptr<BaseMapping> >(m, "BaseMapping", pybind11::multiple_inheritance())
         .def(pybind11::init<>() )
 
         // .def("apply", &BaseMapping::apply)

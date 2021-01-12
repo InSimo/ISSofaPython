@@ -151,7 +151,7 @@ void delAttr(Base* self, const std::string& attr)
 
 void initBindingBase(pybind11::module& m)
 {
-    pybind11::class_<Base, PySofaBase<Base>, sofa::sptr<Base>> base(m, "Base", pybind11::dynamic_attr() );
+    pybind11::class_<Base, PySofaBase<Base>, sofa::sptr<Base>> base(m, "Base", pybind11::dynamic_attr(), pybind11::multiple_inheritance() );
 
     base.def("getName", &Base::getName, pybind11::return_value_policy::copy)
         .def("setName", pybind11::overload_cast<const std::string&>(&Base::setName))

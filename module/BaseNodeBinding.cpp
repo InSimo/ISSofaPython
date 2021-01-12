@@ -48,7 +48,7 @@ void initBindingBaseNode(pybind11::module& m)
 {
     pybind11::class_< BaseNode, Base, 
                       PySofaBaseNode< BaseNode >, 
-                      sofa::sptr< BaseNode > > baseNode(m, "BaseNode");
+                      sofa::sptr< BaseNode > > baseNode(m, "BaseNode", pybind11::multiple_inheritance());
 
     baseNode
         .def("addObject", &BaseNode::addObject)

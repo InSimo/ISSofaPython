@@ -25,6 +25,9 @@ PythonController::PythonController()
 :sofa::core::objectmodel::BaseObject()
 {
     this->f_listening.setValue(true);
+    //std::cout << "NEW PythonController @ " << (void*)this << std::endl;
+    //std::cout << "  BaseObject @ " << (void*)(BaseObject*)this << std::endl;
+    //std::cout << "  Base @ " << (void*)(Base*)this << std::endl;
 }
 
 PythonController::~PythonController()
@@ -89,7 +92,7 @@ void initBindingPythonController(pybind11::module& m)
 
     pybind11::class_<PythonController, BaseObject,
         PySofaBaseObject<PythonController>, // trampoline "alias" class 
-        sofa::sptr<PythonController> >(m, "PythonController")
+        sofa::sptr<PythonController> >(m, "PythonController", pybind11::multiple_inheritance())
         .def(pybind11::init<>())
         .def("addCallback", pybind11::overload_cast<const sofa::core::objectmodel::Event*, const HandleEventCallback&>(&PythonController::addCallback))
         .def("addCallback", pybind11::overload_cast<const std::string&, const HandleEventCallback&>(&PythonController::addCallback))

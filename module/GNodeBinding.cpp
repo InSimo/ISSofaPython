@@ -139,7 +139,7 @@ void initBindingGNode(pybind11::module& m)
 {
     pybind11::class_<GNode, Node,
         PySofaGNode,
-        sofa::sptr< GNode > > gNode(m, "GNode");
+        sofa::sptr< GNode > > gNode(m, "GNode", pybind11::multiple_inheritance());
 
     gNode.def(pybind11::init<>())
          .def("createObject", &internal::createObject)

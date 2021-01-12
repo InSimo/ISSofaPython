@@ -23,7 +23,7 @@ void initBindingCollisionModel(pybind11::module& m)
 {
     pybind11::class_<CollisionModel, BaseObject,
                      PySofaCollisionModel<CollisionModel>, // "trampoline" alias class
-                     sofa::sptr<CollisionModel>>(m, "CollisionModel")
+                     sofa::sptr<CollisionModel>>(m, "CollisionModel", pybind11::multiple_inheritance())
         .def(pybind11::init<>() )
         .def("getContext", [](CollisionModel &self) { return self.getContext(); })
        // .def("getContext", pybind11::overload_cast<>(&CollisionModel::getContext, pybind11::const_), pybind11::return_value_policy::reference)
