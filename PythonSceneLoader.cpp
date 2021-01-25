@@ -10,17 +10,7 @@
 #include <sofa/simulation/tree/TreeSimulation.h>
 #include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
 #include <pybind11/eval.h>
-
-namespace sofa
-{
-
-template< typename T>
-using sptr = boost::intrusive_ptr<T>;
-
-}
-
-PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true)
-
+#include <ISSofaPython/ISSofaPython.h>
 
 namespace sofa
 {

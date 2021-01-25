@@ -1,0 +1,38 @@
+/*******************************************************************************
+*          Private SOFA components, (c) 2018 InSimo                            *
+* CONFIDENTIAL SOURCE CODE. This file is the property of InSimo and should not *
+* be redistributed. Commercial use is prohibited without a specific license.   *
+*******************************************************************************/
+
+#ifndef _ISSOFAPYTHON_H_
+#define _ISSOFAPYTHON_H_
+
+#include <sofa/helper/system/config.h>
+#include <boost/intrusive_ptr.hpp>
+#include <pybind11/pybind11.h>
+
+#ifdef SOFA_BUILD_ISSOFAPYTHON
+#  define SOFA_TARGET ISSofaPython
+#  define ISSOFAPYTHON_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#else
+#  define ISSOFAPYTHON_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#endif
+
+#cmakedefine ISSOFAPYTHON_USE_PYBIND11_GIL
+
+#cmakedefine ISSOFAPYTHON_CREATE_CHILD_HOOK
+
+#cmakedefine ISSOFAPYTHON_USE_LEGACY_API
+
+namespace sofa
+{
+
+template< typename T>
+using sptr = boost::intrusive_ptr<T>;
+
+}
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true)
+
+
+#endif // _ISSOFAPYTHON_H_

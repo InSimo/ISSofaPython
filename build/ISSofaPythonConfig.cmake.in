@@ -14,6 +14,10 @@ endif()
 # make the issofapython_add_package method reachable
 include(ISSofaPythonSetupTools)
 
+set(ISSOFAPYTHON_USE_PYBIND11_GIL "@ISSOFAPYTHON_USE_PYBIND11_GIL@" CACHE INTERNAL "")
+set(ISSOFAPYTHON_CREATE_CHILD_HOOK "@ISSOFAPYTHON_CREATE_CHILD_HOOK@" CACHE INTERNAL "")
+set(ISSOFAPYTHON_USE_LEGACY_API "@ISSOFAPYTHON_USE_LEGACY_API@" CACHE INTERNAL "")
+
 if( NOT TARGET SofaSimulationCommon )
     find_package(SofaSimulation REQUIRED)
 endif()

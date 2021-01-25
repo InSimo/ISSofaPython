@@ -10,14 +10,12 @@
 #include <sofa/core/ObjectFactory.h>
 
 #include <pybind11/functional.h>
+#include <ISSofaPython/GIL.h>
 
 namespace sofa
 {
 namespace python
 {
-
-SOFA_TLS_KEYWORD PyGILState_STATE PythonController::AcquireThreadState::state;
-SOFA_TLS_KEYWORD int PythonController::AcquireThreadState::have_lock = 0;
 
 int PythonControllerClass = core::RegisterObject("Controller class to handle sofa events with python").add<PythonController>();
 
@@ -43,7 +41,7 @@ void PythonController::handleEvent(SofaEvent* e)
     {
         try
         {
-           AcquireThreadState gil_acquire;
+           sofa::python::gil_scoped_acquire gil_acquire;
            it->second( e );
         }
         catch( const pybind11::error_already_set& e )
@@ -55,7 +53,7 @@ void PythonController::handleEvent(SofaEvent* e)
 
 void PythonController::cleanup()
 {
-    AcquireThreadState gil_acquired;
+    sofa::python::gil_scoped_acquire gil_acquire;
     // The callback map is likely to hold function pointers that are member methods of a 
     // python class that derive from PythonController.
     // We therefore must clear it to ensure proper object destruction.

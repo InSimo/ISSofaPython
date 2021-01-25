@@ -23,6 +23,8 @@ option(ISSOFAPYTHON_USE_LEGACY_API "Expose some legacy APIs to get the behavior 
 
 option(ISSOFAPYTHON_CREATE_CHILD_HOOK "Call a hook each time a child node is created from python ( the hook must be manually registered from python: `sofa.HOOKS['createChild'] = some_func` )" OFF)
 
+option(ISSOFAPYTHON_USE_PYBIND11_GIL "Acquire GIL using pybind11::gil_scoped_acquire, otherwise a custom " ON)
+
 get_filename_component(ISSOFAPYTHON_ACTUAL_SOURCE_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
 set(PYBIND11_INSTALL ON CACHE BOOL "Install pybind11 header files?" FORCE)
@@ -39,9 +41,14 @@ if( NOT TARGET SofaSimulationCommon )
     find_package(SofaSimulation REQUIRED)
 endif()
 
+if(NOT TARGET SofaBaseTopology )
+    find_package(SofaBase REQUIRED)
+endif()
+
 set(ISSOFAPYTHON_MODULE_DIR ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/module)
 
 set( MODULE_HEADER_FILES
+    ${ISSOFAPYTHON_MODULE_DIR}/include/ISSofaPython/GIL.h
     ${ISSOFAPYTHON_MODULE_DIR}/common.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseBinding.h
     ${ISSOFAPYTHON_MODULE_DIR}/BaseClassBinding.h
@@ -92,6 +99,7 @@ set( MODULE_SOURCE_FILES
     ${ISSOFAPYTHON_MODULE_DIR}/EventBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/Exceptions.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/NodeBinding.cpp
+    ${ISSOFAPYTHON_MODULE_DIR}/GIL.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/GNodeBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/TopologyBinding.cpp
     ${ISSOFAPYTHON_MODULE_DIR}/BaseMeshTopologyBinding.cpp
@@ -108,11 +116,15 @@ set( MODULE_SOURCE_FILES
 
 add_library(ISSofaPython SHARED ${MODULE_SOURCE_FILES} ${MODULE_HEADER_FILES} )
 target_link_libraries(ISSofaPython PUBLIC pybind11::module)
-target_link_libraries(ISSofaPython PRIVATE SofaSimulationTree SofaComponentGeneral SofaComponentBase ${PYTHON_LIBRARIES})
+target_link_libraries(ISSofaPython PRIVATE SofaSimulationTree SofaBaseTopology ${PYTHON_LIBRARIES})
 
 target_include_directories(ISSofaPython PUBLIC 
-                           $<BUILD_INTERFACE:${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}>
-                           $<INSTALL_INTERFACE:${ISSOFAPYTHON_INSTALL_INCLUDE_DIR}>
+                           $<BUILD_INTERFACE:${ISSOFAPYTHON_MODULE_DIR}/include>
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+                           $<INSTALL_INTERFACE:${ISSOFAPYTHON_INSTALL_INCLUDE_DIR}/ISSofaPython>
+                           )
+target_include_directories(ISSofaPython PRIVATE 
+                           $<BUILD_INTERFACE:${ISSOFAPYTHON_MODULE_DIR}>
                            )
 set_target_properties(ISSofaPython PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                               SUFFIX "${PYTHON_MODULE_EXTENSION}")
@@ -127,6 +139,16 @@ if (ISSOFAPYTHON_CREATE_CHILD_HOOK)
     target_compile_definitions(ISSofaPython PRIVATE "ISSOFAPYTHON_CREATE_CHILD_HOOK=1")
 endif()
 
+if(ISSOFAPYTHON_USE_PYBIND11_GIL)
+    target_compile_definitions(ISSofaPython PUBLIC "ISSOFAPYTHON_USE_PYBIND11_GIL=1")
+endif()
+
+# ISSofaPython generated header file
+configure_file( ISSofaPython.h.in
+                ${CMAKE_CURRENT_BINARY_DIR}/ISSofaPython/ISSofaPython.h )
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/ISSofaPython/ISSofaPython.h
+         DESTINATION ${ISSOFAPYTHON_INSTALL_INCLUDE_DIR}/ISSofaPython)
+
 set( PLUGIN_HEADER_FILES 
     ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/initPlugin.h
     ${ISSOFAPYTHON_ACTUAL_SOURCE_DIR}/PythonSceneLoader.h
@@ -138,7 +160,7 @@ set( PLUGIN_SOURCE_FILES
 )
 
 add_library(ISSofaPythonPlugin SHARED ${PLUGIN_HEADER_FILES} ${PLUGIN_SOURCE_FILES})
-target_link_libraries(ISSofaPythonPlugin PRIVATE pybind11::embed SofaSimulationTree)
+target_link_libraries(ISSofaPythonPlugin PRIVATE pybind11::embed SofaSimulationTree ISSofaPython)
 
 if (ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY)
     target_compile_definitions(ISSofaPythonPlugin PRIVATE $<$<CONFIG:Debug>:ISSOFAPYTHON_DONT_WRITE_BYTECODE>)

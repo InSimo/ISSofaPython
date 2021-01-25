@@ -7,25 +7,11 @@
 #ifndef ISSOFA_PYTHON_BASEBINDING_H
 #define ISSOFA_PYTHON_BASEBINDING_H
 
-#include <pybind11/pybind11.h>
+#include <ISSofaPython/ISSofaPython.h>
 #include <sofa/core/objectmodel/BaseClass.h>
-#include <boost/intrusive_ptr.hpp>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/objectmodel/BaseNode.h>
 #include <sofa/simulation/tree/GNode.h>
-
-
-
-namespace sofa
-{
-
-template< typename T>
-using sptr = boost::intrusive_ptr<T>;
-
-}
-
-PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true)
-
 
 namespace sofa
 {
