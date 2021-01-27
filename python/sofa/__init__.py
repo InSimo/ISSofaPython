@@ -35,14 +35,7 @@ if 'SOFA_PLUGIN_PATH' not in os.environ:
     os.environ['SOFA_PLUGIN_PATH'] = (os.path.join(os.path.abspath(sys.prefix)) if IS_WIN
                                       else os.path.join(os.path.abspath(sys.prefix), 'lib'))
 
-from ISSofaPython import (
-    AnimateBeginEvent, AnimateEndEvent, Base, BaseClass, BaseClassInfo,
-    BaseContext, BaseData, BaseLink, BaseNode, BaseObject, BaseObjectDescription,
-    CollisionBeginEvent, CollisionEndEvent, Context, DDGNode, Event, EventClass,
-    GNode, GetEventRootClass, IntegrateBeginEvent, IntegrateEndEvent,
-    KeypressedEvent, Node, ObjectFactory, PluginManager, PythonController,
-    PythonEvent, addDataPath, cleanupGraph, createNode, createRootNode, getNode,
-    getObject, getRoot, initializeGraph, loadPlugin, step)
+from ISSofaPython import *
 
 def find_sofaenv_file():
     sofaenv_found = False
