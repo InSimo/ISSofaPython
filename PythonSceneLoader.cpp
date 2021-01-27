@@ -11,6 +11,7 @@
 #include <pybind11/stl.h> // to cast std::vector<std::string> into list<str>
 #include <pybind11/eval.h>
 #include <ISSofaPython/ISSofaPython.h>
+#include <ISSofaPython/GIL.h>
 
 namespace sofa
 {
@@ -90,6 +91,9 @@ sofa::simulation::Node::SPtr PythonSceneLoader::load(const char *filename, const
     GNode::SPtr gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
 
     static std::string prevSceneDir = "";
+
+    sofa::python::gil_scoped_acquire acquire;
+
     try
     {
         pybind11::module sys = pybind11::module::import("sys");
