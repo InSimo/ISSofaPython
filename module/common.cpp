@@ -77,6 +77,42 @@ pybind11::object getDerivedPyObject(sofa::core::objectmodel::Base* obj)
     return pybind11::cast(obj);
 }
 
+void setSourceLocation(sofa::core::objectmodel::Base* obj)
+{
+    // store the source location of this object
+    //PyFrameObject* frame = PyEval_GetFrame();
+    PyThreadState *tstate = PyThreadState_GET();
+    if (NULL != tstate && NULL != tstate->frame)
+    {
+        PyFrameObject *frame = tstate->frame;
+        int depth = 6; // max number of frames to capture
+        do
+        {
+            // int line = frame->f_lineno;
+            /*
+            frame->f_lineno will not always return the correct line number
+            you need to call PyCode_Addr2Line().
+            */
+            int line = PyCode_Addr2Line(frame->f_code, frame->f_lasti);
+            std::string filename;
+            // https://stackoverflow.com/questions/22487780/what-do-i-use-instead-of-pystring-asstring-when-loading-a-python-module-in-3-3
+            if (PyUnicode_Check(frame->f_code->co_filename)) {
+                PyObject* tempBytes = PyUnicode_AsEncodedString(frame->f_code->co_filename, "UTF-8", "strict");
+                filename = PYBIND11_BYTES_AS_STRING(tempBytes);
+                Py_DECREF(tempBytes);
+            }
+            else if (PyBytes_Check(frame->f_code->co_filename)) {
+                filename = PYBIND11_BYTES_AS_STRING(frame->f_code->co_filename);
+            }
+            //const char *funcname = PyString_AsString(frame->f_code->co_name);
+            //printf("    %s(%d): %s\n", filename, line, funcname);
+            obj->addSourceFile(filename.c_str(), line, 0);
+            frame = frame->f_back;
+        } while (NULL != frame && --depth > 0);
+    }
+
+}
+
 } // namespace python
 
 } // namespace sofa

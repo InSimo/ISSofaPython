@@ -11,6 +11,7 @@
 
 #include <pybind11/functional.h>
 #include <ISSofaPython/GIL.h>
+#include "common.h"
 
 namespace sofa
 {
@@ -26,6 +27,16 @@ PythonController::PythonController()
     //std::cout << "NEW PythonController @ " << (void*)this << std::endl;
     //std::cout << "  BaseObject @ " << (void*)(BaseObject*)this << std::endl;
     //std::cout << "  Base @ " << (void*)(Base*)this << std::endl;
+    sofa::python::gil_scoped_acquire gil_acquire;
+    try
+    {
+        setSourceLocation(this);
+    }
+    catch (const pybind11::error_already_set& e)
+    {
+        serr << "PythonController: Python exception in callback:\n" << e.what() << sendl;
+    }
+
 }
 
 PythonController::~PythonController()

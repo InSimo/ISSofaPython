@@ -15,7 +15,7 @@
 
 #include <sofa/core/ExecParams.h>
 #include "PythonVisitor.h"
-
+#include "common.h"
 #include <pybind11/pybind11.h>
 namespace sofa
 {
@@ -39,6 +39,8 @@ pybind11::object createRootNode(const std::string& name)
 {
     sofa::sptr<Node> root = sofa::simulation::tree::getSimulation()->createNewGraph(name);
     sofa::sptr<GNode> gNodeRoot = sofa::core::objectmodel::SPtr_static_cast<GNode>(root);
+    setSourceLocation(gNodeRoot.get());
+
     return pybind11::cast(gNodeRoot);
 }
 
@@ -46,6 +48,7 @@ pybind11::object createNode(const std::string& name)
 {
     sofa::sptr<Node> node = sofa::simulation::tree::getSimulation()->createNewNode(name);
     sofa::sptr<GNode> gNode = sofa::core::objectmodel::SPtr_static_cast<GNode>(node);
+    setSourceLocation(gNode.get());
 
     return pybind11::cast(gNode);
 }
@@ -83,8 +86,10 @@ pybind11::object createChild(sofa::sptr<GNode> gNode, const std::string& name)
 {
     sofa::sptr<Node> nChild = gNode->createChild(name);
     sofa::sptr<GNode> gChild = sofa::core::objectmodel::SPtr_static_cast<GNode>(nChild);
-
+    setSourceLocation(gChild.get());
     pybind11::object pyObj = pybind11::cast(gChild);
+
+
 
 #ifdef ISSOFAPYTHON_CREATE_CHILD_HOOK
     /* See the associated CMake variable.

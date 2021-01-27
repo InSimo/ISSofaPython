@@ -22,6 +22,8 @@ namespace python
 // to allow the usage of specific methods in the Python side, for each object type.
 pybind11::object getDerivedPyObject(sofa::core::objectmodel::Base* obj);
 
+void setSourceLocation(sofa::core::objectmodel::Base* obj);
+
 } // namespace python
 
 } // namespace sofa
