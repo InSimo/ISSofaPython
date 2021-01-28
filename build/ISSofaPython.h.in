@@ -7,22 +7,31 @@
 #ifndef _ISSOFAPYTHON_H_
 #define _ISSOFAPYTHON_H_
 
-#include <sofa/helper/system/config.h>
 #include <boost/intrusive_ptr.hpp>
 #include <pybind11/pybind11.h>
 
-#ifdef SOFA_BUILD_ISSOFAPYTHON
-#  define SOFA_TARGET ISSofaPython
-#  define ISSOFAPYTHON_API SOFA_EXPORT_DYNAMIC_LIBRARY
+// linking with pybind11 publicly triggers -fvisibility=hidden with gcc / clang,
+// so we need to define these preprocessor macro to be able to expose public symbols to other libraries
+#ifndef WIN32
+#   define ISSOFAPYTHON_EXPORT_DYNAMIC_LIBRARY __attribute__ ((visibility ("default")))
+#   define ISSOFAPYTHON_IMPORT_DYNAMIC_LIBRARY __attribute__ ((visibility ("default")))
 #else
-#  define ISSOFAPYTHON_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#   define ISSOFAPYTHON_EXPORT_DYNAMIC_LIBRARY __declspec( dllexport )
+#   define ISSOFAPYTHON_IMPORT_DYNAMIC_LIBRARY __declspec( dllimport )
+#   ifdef _MSC_VER
+#       pragma warning(disable : 4231)
+#       pragma warning(disable : 4910)
+#   endif
+#endif
+
+#ifdef SOFA_BUILD_ISSOFAPYTHON
+#    define SOFA_TARGET ISSofaPython
+#    define ISSOFAPYTHON_API ISSOFAPYTHON_EXPORT_DYNAMIC_LIBRARY
+#else
+#    define ISSOFAPYTHON_API ISSOFAPYTHON_IMPORT_DYNAMIC_LIBRARY
 #endif
 
 #cmakedefine ISSOFAPYTHON_USE_PYBIND11_GIL
-
-#cmakedefine ISSOFAPYTHON_CREATE_CHILD_HOOK
-
-#cmakedefine ISSOFAPYTHON_USE_LEGACY_API
 
 namespace sofa
 {
@@ -33,6 +42,5 @@ using sptr = boost::intrusive_ptr<T>;
 }
 
 PYBIND11_DECLARE_HOLDER_TYPE(T, sofa::sptr<T>, true)
-
 
 #endif // _ISSOFAPYTHON_H_

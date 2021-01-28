@@ -115,8 +115,7 @@ set( MODULE_SOURCE_FILES
 )
 
 add_library(ISSofaPython SHARED ${MODULE_SOURCE_FILES} ${MODULE_HEADER_FILES} )
-target_link_libraries(ISSofaPython PUBLIC pybind11::module)
-target_link_libraries(ISSofaPython PRIVATE SofaSimulationTree SofaBaseTopology ${PYTHON_LIBRARIES})
+target_link_libraries(ISSofaPython PRIVATE pybind11::module SofaSimulationTree SofaBaseTopology ${PYTHON_LIBRARIES})
 
 target_include_directories(ISSofaPython PUBLIC 
                            $<BUILD_INTERFACE:${ISSOFAPYTHON_MODULE_DIR}/include>

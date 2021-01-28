@@ -7,14 +7,12 @@
 #ifndef ISSOFA_PYTHON_ISSOFAPYTHONMODULE_H
 #define ISSOFA_PYTHON_ISSOFAPYTHONMODULE_H
 
+#include <ISSofaPython/ISSofaPython.h>
+
 namespace sofa
 {
 namespace python
 {
-
-#ifdef SOFA_BUILD_ISSOFAPYTHON
-#define SOFA_TARGET ISSofaPython
-#endif
 
 }
 
