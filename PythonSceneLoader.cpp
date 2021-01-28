@@ -23,6 +23,8 @@ using sofa::simulation::SceneLoader;
 
 PythonSceneLoader::PythonSceneLoader()
 {
+    sofa::python::gil_scoped_acquire acquire;
+
     auto sys = pybind11::module::import("sys");
     std::vector<std::string> localPath;
 #ifdef _WIN32
