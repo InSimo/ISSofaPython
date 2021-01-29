@@ -127,8 +127,8 @@ target_include_directories(ISSofaPython PRIVATE
                            )
 set_target_properties(ISSofaPython PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                               SUFFIX "${PYTHON_MODULE_EXTENSION}")
-set(ISSOFAPYTHON_COMPILER_FLAGS "-DSOFA_BUILD_ISSOFAPYTHON")
-set_target_properties( ISSofaPython PROPERTIES COMPILE_FLAGS "${ISSOFAPYTHON_COMPILER_FLAGS}"  )
+
+target_compile_definitions( ISSofaPython PRIVATE "SOFA_BUILD_ISSOFAPYTHON")
 
 if (ISSOFAPYTHON_USE_LEGACY_API)
     target_compile_definitions(ISSofaPython PRIVATE "ISSOFAPYTHON_USE_LEGACY_API=1")
@@ -165,7 +165,6 @@ if (ISSOFAPYTHON_WRITE_BYTECODE_RELEASE_ONLY)
     target_compile_definitions(ISSofaPythonPlugin PRIVATE $<$<CONFIG:Debug>:ISSOFAPYTHON_DONT_WRITE_BYTECODE>)
     target_compile_definitions(ISSofaPythonPlugin PRIVATE $<$<CONFIG:RelWithDebInfo>:ISSOFAPYTHON_DONT_WRITE_BYTECODE>)
 endif()
-
 
 target_compile_definitions(ISSofaPythonPlugin PRIVATE "SOFA_BUILD_ISSOFAPYTHONPLUGIN")
 

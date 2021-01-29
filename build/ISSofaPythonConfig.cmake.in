@@ -3,7 +3,7 @@
 # - ISSofaPython_INCLUDE_DIRS : include directories for ISSofaPython
 # - ISSofaPython_LIBRARIES    : libraries to link against
 
-include(CMakeFindDependencyMacro)
+@PACKAGE_INIT@
 
 list(FIND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}" HAS_ISSOFAPYTHON_CMAKE_MODULE_PATH)
 
@@ -28,6 +28,8 @@ endif()
 if(NOT TARGET ISSofaPython)
     include("${CMAKE_CURRENT_LIST_DIR}/ISSofaPythonTargets.cmake")
 endif()
+
+check_required_components(ISSofaPythonScriptController)
 
 get_property(ISSofaPython_INCLUDE_DIRS TARGET ISSofaPython PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 get_property(ISSofaPython_LIBRARIES TARGET ISSofaPython PROPERTY INTERFACE_LINK_LIBRARIES)
