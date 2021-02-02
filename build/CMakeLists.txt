@@ -200,7 +200,7 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
     endif()
 endif()
 
-set_target_properties( ISSofaPythonPlugin PROPERTIES DEBUG_POSTFIX "_d" )
+set_target_properties( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d" )
 
 # Add the plugin to SOFA_PRELOAD_ENV so that it is automatically preloaded by runSofa
 set_property(TARGET SofaHelper APPEND PROPERTY SOFA_PRELOAD "ISSofaPythonPlugin")
