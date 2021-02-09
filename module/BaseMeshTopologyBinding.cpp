@@ -61,7 +61,7 @@ pybind11::object getEdgesInTriangle(BaseMeshTopology* obj, int triangleId)
     sofa::helper::fixed_array<BaseMeshTopology::EdgeID,3> eint = obj->getEdgesInTriangle(BaseMeshTopology::TriangleID(triangleId));
     pybind11::list list;
     for (unsigned int i = 0u; i < 3; i++)
-        list[i] = eint[i];
+        list.append(eint[i]);
     return list;
 }
 
