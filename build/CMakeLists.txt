@@ -138,10 +138,6 @@ if (ISSOFAPYTHON_CREATE_CHILD_HOOK)
     target_compile_definitions(ISSofaPython PRIVATE "ISSOFAPYTHON_CREATE_CHILD_HOOK=1")
 endif()
 
-if(ISSOFAPYTHON_USE_PYBIND11_GIL)
-    target_compile_definitions(ISSofaPython PUBLIC "ISSOFAPYTHON_USE_PYBIND11_GIL=1")
-endif()
-
 # ISSofaPython generated header file
 configure_file( ISSofaPython.h.in
                 ${CMAKE_CURRENT_BINARY_DIR}/ISSofaPython/ISSofaPython.h )
