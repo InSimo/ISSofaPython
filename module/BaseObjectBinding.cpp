@@ -45,7 +45,7 @@ pybind11::object getSlaves(sofa::sptr<BaseObject> obj)
     {
         pyList.append(slave);
     }
-    return pyList;
+    return std::move(pyList);
 }
 
 }

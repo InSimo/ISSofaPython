@@ -403,7 +403,7 @@ void setDataValueFromPyContainer(BaseData* data, PyContainerType pyContainer)
 {
     const AbstractTypeInfo* dataTypeInfo = data->getValueTypeInfo();
     void * dataPtr = data->beginEditVoidPtr();
-    const bool ok = setValuePtrFromPyContainer<PyContainerType>(dataPtr, data->getValueTypeInfo()->ContainerType(), pyContainer);
+    const bool ok = setValuePtrFromPyContainer<PyContainerType>(dataPtr, dataTypeInfo->ContainerType(), pyContainer);
     data->endEditVoidPtr();
     if (!ok)
     {
@@ -550,23 +550,19 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
         const AbstractValueTypeInfo* singleTypeInfo = typeInfo->SingleValueType();
         if (singleTypeInfo->Integer())
         {
-            pybind11::int_ pyInt(singleTypeInfo->getFinalValueInteger(dataPtr, 0));
-            return pyInt;
+            return pybind11::int_(singleTypeInfo->getFinalValueInteger(dataPtr, 0));
         }
         else if (singleTypeInfo->Unsigned())
         {
-            pybind11::int_ pyInt((unsigned long long)(singleTypeInfo->getFinalValueInteger(dataPtr, 0)));
-            return pyInt;
+            return pybind11::int_((unsigned long long)(singleTypeInfo->getFinalValueInteger(dataPtr, 0)));
         }
         else if (singleTypeInfo->Scalar())
         {
-            pybind11::float_ pyFloat(singleTypeInfo->getFinalValueScalar(dataPtr, 0));
-            return pyFloat;
+            return pybind11::float_(singleTypeInfo->getFinalValueScalar(dataPtr, 0));
         }
         else if (singleTypeInfo->String())
         {
-            pybind11::str pyString(singleTypeInfo->getFinalValueString(dataPtr, 0));
-            return pyString;
+            return pybind11::str(singleTypeInfo->getFinalValueString(dataPtr, 0));
         }
         else
         {
@@ -588,7 +584,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
             pybind11::object obj = getDataPtrValueAsPyObject(dataStructMemberPtr, typeInfo, data);
             pyDict[dataStructMemberName.c_str()] = obj;
         }
-        return pyDict;
+        return std::move(pyDict);
     }
     else if (typeInfo->IsContainer())
     {
@@ -603,7 +599,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
             ++itData;
         }
 
-        return pyList;
+        return std::move(pyList);
 
     }
     else if(typeInfo->ValidInfo() &&  typeInfo->IsMultiValue())
@@ -670,7 +666,7 @@ pybind11::object getDataPtrValueAsPyObject(const void* dataPtr, const AbstractTy
                 rows.append(row);
             }
 
-            return rows;
+            return std::move(rows);
         }
     }
     else
@@ -687,8 +683,7 @@ pybind11::object getDataValueAsPyObject(const BaseData* data)
     if (typeInfo && !typeInfo->ValidInfo()) // fallback mode, expose a string
     {
         std::string str = data->getValueString();
-        pybind11::str pyStr(str);
-        return pyStr;
+        return pybind11::str(str);
     }
 
     pybind11::object obj = getDataPtrValueAsPyObject(data->getValueVoidPtr(), typeInfo, data);
@@ -769,8 +764,7 @@ pybind11::object getDataJsonAsPyObject(const BaseData* data)
         throw SofaDataAttributeError(data, "unsupported DataTypeInfo for JSON parsing");
         output = "{}";
     }
-    pybind11::str pyStr(output);
-    return pyStr;
+    return pybind11::str(output);
 }
 
 void setDataJsonFromPyObject(BaseData* data, const std::string& json)

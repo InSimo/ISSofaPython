@@ -52,7 +52,7 @@ pybind11::object indicesVectorToPyList(const sofa::helper::vector<BaseMeshTopolo
     pybind11::list list;
     for (unsigned int i = 0u; i < vector.size(); i++)
         list.append(vector[i]);
-    return list;
+    return std::move(list);
 }
 
 pybind11::object getVerticesAroundVertex(BaseMeshTopology* obj, int pointId)
@@ -81,7 +81,7 @@ pybind11::object getEdgesInTriangle(BaseMeshTopology* obj, int triangleId)
     pybind11::list list;
     for (unsigned int i = 0u; i < 3; i++)
         list.append(eint[i]);
-    return list;
+    return std::move(list);
 }
 
 }

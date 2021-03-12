@@ -92,7 +92,7 @@ pybind11::object getChildren(sofa::sptr<GNode> gNode)
     {
         pyList.append(child);
     }
-    return pyList;
+    return std::move(pyList);
 }
 
 pybind11::object getChild(sofa::sptr<GNode> gNode, const std::string& name)
