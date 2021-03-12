@@ -48,7 +48,7 @@ Visitor::Result PythonVisitor::processNodeTopDown(simulation::Node* node)
         return Visitor::RESULT_CONTINUE;
     }
 
-    bool r = ( res == Py_True );
+    bool r = res.cast<bool>();
     return r ? Visitor::RESULT_CONTINUE : Visitor::RESULT_PRUNE;
 }
 

@@ -76,7 +76,7 @@ sofa::helper::vector<Topology::Triangle> parseTriangleList(pybind11::list& pyLis
     }
     else
     {
-        for (int i=0; i<pyList.size(); ++i)
+        for (std::size_t i=0; i<pyList.size(); ++i)
         {
             pybind11::tuple tuple = pyList[i];
             triangles.push_back(parseTriangleTuple(tuple));
